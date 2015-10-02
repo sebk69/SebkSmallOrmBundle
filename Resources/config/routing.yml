@@ -1,0 +1,3 @@
+sebk_small_orm_homepage:
+    path:     /hello/{name}
+    defaults: { _controller: SebkSmallOrmBundle:Default:index }
