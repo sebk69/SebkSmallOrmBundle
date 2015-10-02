@@ -1,4 +1,4 @@
 services:
-#    sebk_small_orm.example:
-#        class: Sebk\SmallOrmBundle\Example
-#        arguments: [@service_id, "plain_value", %parameter%]
+    sebk_small_orm_connection:
+        class: Sebk\SmallOrmBundle\Database\Connection
+        arguments: [%database_type%, %database_host%, %database_name%, %database_user%, %database_password%]
