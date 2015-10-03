@@ -15,12 +15,12 @@ class Connection
     protected $pdo;
 
     /**
-     * Build connection
-     * @param type $dbType
-     * @param type $host
-     * @param type $database
-     * @param type $user
-     * @param type $password
+     * Construct and open connection
+     * @param string $dbType
+     * @param string $host
+     * @param string $database
+     * @param string $user
+     * @param string $password
      * @throws ConnectionException
      */
     public function __construct($dbType, $host, $database, $user, $password)
@@ -43,9 +43,9 @@ class Connection
 
     /**
      * Execute sql instruction
-     * @param type $sql
-     * @param type $params
-     * @return type
+     * @param string $sql
+     * @param array $params
+     * @return array
      * @throws ConnectionException
      */
     public function execute($sql, $params = array()) {
@@ -65,7 +65,7 @@ class Connection
 
     /**
      * Get last insert id
-     * @return type
+     * @return int
      */
     public function lastInsertId() {
         return $this->pdo->lastInsertId();
