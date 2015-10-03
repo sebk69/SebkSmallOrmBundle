@@ -12,18 +12,45 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  */
 class Configuration implements ConfigurationInterface
 {
+
     /**
      * {@inheritdoc}
      */
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('sebk_small_orm');
+        $rootNode    = $treeBuilder->root('sebk_small_orm');
 
-        // Here you should define the parameters that are allowed to
-        // configure your bundle. See the documentation linked above for
-        // more information on that topic.
-
+        $rootNode
+            ->children()
+                ->scalarNode('default_connection')
+                    ->defaultValue('default')
+                ->end()
+                ->arrayNode('connections')
+                    ->prototype('array')
+                        ->children()
+                            ->scalarNode('type')
+                                ->isRequired()
+                                ->validate()
+                                ->ifNotInArray(array('mysql'))
+                                    ->thenInvalid('Invalid database driver "%s"')
+                                ->end()
+                            ->end()
+                            ->scalarNode('host')
+                                ->defaultValue('localhost')
+                            ->end()
+                            ->scalarNode('database')
+                                ->isRequired()
+                                ->cannotBeEmpty()
+                            ->end()
+                            ->scalarNode('user')->end()
+                            ->scalarNode('password')->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ;
+        
         return $treeBuilder;
     }
 }

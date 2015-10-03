@@ -14,15 +14,20 @@ use Symfony\Component\DependencyInjection\Loader;
  */
 class SebkSmallOrmExtension extends Extension
 {
+
     /**
      * {@inheritdoc}
      */
     public function load(array $configs, ContainerBuilder $container)
     {
         $configuration = new Configuration();
-        $config = $this->processConfiguration($configuration, $configs);
+        $config        = $this->processConfiguration($configuration, $configs);
 
-        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader = new Loader\YamlFileLoader($container,
+            new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
+
+        $container->setParameter('sebk_small_orm.default_connection', $config['default_connection']);
+        $container->setParameter('sebk_small_orm.connexions', $config['connections']);
     }
 }

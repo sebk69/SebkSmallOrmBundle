@@ -1,4 +1,4 @@
 services:
-    sebk_small_orm_connection:
-        class: Sebk\SmallOrmBundle\Database\Connection
-        arguments: [%database_type%, %database_host%, %database_name%, %database_user%, %database_password%]
+    sebk_small_orm_connections:
+        class: Sebk\SmallOrmBundle\Factory\Connections
+        arguments: [%sebk_small_orm.connexions%, %sebk_small_orm.default_connection%]
