@@ -56,4 +56,18 @@ class Connections
 
         return static::$connections[$connectionName];
     }
+
+    /**
+     * Get list of connections names
+     * @return array
+     */
+    public function getNamesAsArray()
+    {
+        $array = array();
+        foreach($this->config as $connectionName => $connectionParams) {
+            $array[] = $connectionName;
+        }
+
+        return $array;
+    }
 }
