@@ -7,6 +7,7 @@
 namespace Sebk\SmallOrmBundle\Dao;
 
 use Sebk\SmallOrmBundle\Database\Connection;
+use Sebk\SmallOrmBundle\QueryBuilder\QueryBuilder;
 
 /**
  * Abstract class to provide base dao features
@@ -82,7 +83,35 @@ abstract class AbstractDao
         $this->fields[] = new Field($dbFieldName, $modelFieldName);
     }
 
+    /**
+     * Build definition of table
+     * Must be defined in model acheviment
+     */
     abstract protected function build();
+
+    /**
+     * Get primary keys definition
+     * @return array
+     */
+    public function getPrimaryKeys() {
+        return $this->primaryKeys;
+    }
+
+    /**
+     * Get fields difinitions
+     * @param boolean $withIds
+     * @return array
+     */
+    public function getFields($withIds = true) {
+        $result = array();
+        if($withIds == true) {
+            $result = $this->primaryKeys;
+        }
+
+        $result = array_merge($result, $this->fields);
+
+        return $result;
+    }
 
     /**
      * Create new model
@@ -103,5 +132,23 @@ abstract class AbstractDao
         }
 
         return new $modelClass($this->modelName, $primaryKeys, $fields);
+    }
+
+    /**
+     * Create query builder object with base model from this dao
+     * @param type $alias
+     * @return QueryBuilder
+     */
+    public function createQueryBuilder($alias = null) {
+        return new QueryBuilder($this, $alias);
+    }
+
+    /**
+     * Execute sql and get raw result
+     * @param QueryBuilder $query
+     * @return array
+     */
+    public function getRawResult(QueryBuilder $query) {
+        return $this->connection->execute($query->getSql());
     }
 }
