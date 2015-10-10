@@ -1,7 +1,8 @@
 <?php
 /**
  * This file is a part of SebkSmallOrmBundle
- * Copyrigth 2015 - Sébastien Kus
+ * Copyrigtht 2015 - Sébastien Kus
+ * Under GNU GPL V3 licence
  */
 
 namespace Sebk\SmallOrmBundle\Factory;
