@@ -1,7 +1,7 @@
 <?php
 /**
  * This file is a part of SebkSmallOrmBundle
- * Copyrigtht 2015 - Sébastien Kus
+ * Copyright 2015 - Sébastien Kus
  * Under GNU GPL V3 licence
  */
 
@@ -74,6 +74,8 @@ abstract class AbstractDao
     protected function addPrimaryKey($dbFieldName, $modelFieldName)
     {
         $this->primaryKeys[] = new Field($dbFieldName, $modelFieldName);
+
+        return $this;
     }
 
     /**
@@ -83,6 +85,8 @@ abstract class AbstractDao
     protected function addField($dbFieldName, $modelFieldName)
     {
         $this->fields[] = new Field($dbFieldName, $modelFieldName);
+
+        return $this;
     }
 
     /**
