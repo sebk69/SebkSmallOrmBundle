@@ -21,8 +21,9 @@ abstract class AbstractDao
     private $primaryKeys;
     private $fields;
 
-    public function __construct(Connection $connection, $modelNamespace) {
-        $this->connection = $connection;
+    public function __construct(Connection $connection, $modelNamespace)
+    {
+        $this->connection     = $connection;
         $this->modelNamespace = $modelNamespace;
         $this->build();
     }
@@ -93,7 +94,8 @@ abstract class AbstractDao
      * Get primary keys definition
      * @return array
      */
-    public function getPrimaryKeys() {
+    public function getPrimaryKeys()
+    {
         return $this->primaryKeys;
     }
 
@@ -102,9 +104,10 @@ abstract class AbstractDao
      * @param boolean $withIds
      * @return array
      */
-    public function getFields($withIds = true) {
+    public function getFields($withIds = true)
+    {
         $result = array();
-        if($withIds == true) {
+        if ($withIds == true) {
             $result = $this->primaryKeys;
         }
 
@@ -139,7 +142,8 @@ abstract class AbstractDao
      * @param type $alias
      * @return QueryBuilder
      */
-    public function createQueryBuilder($alias = null) {
+    public function createQueryBuilder($alias = null)
+    {
         return new QueryBuilder($this, $alias);
     }
 
@@ -148,7 +152,35 @@ abstract class AbstractDao
      * @param QueryBuilder $query
      * @return array
      */
-    public function getRawResult(QueryBuilder $query) {
-        return $this->connection->execute($query->getSql());
+    public function getRawResult(QueryBuilder $query)
+    {
+        return $this->connection->execute($query->getSql(), $query->getParameters());
+    }
+
+    /**
+     * Has field
+     * @param string $fieldName
+     * @return boolean
+     */
+    public function hasField($fieldName)
+    {
+        foreach($this->getFields() as $field) {
+            if($field->getModelName($field)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function getField($fieldName)
+    {
+        foreach($this->getFields() as $field) {
+            if($field->getModelName() == $fieldName) {
+                return $field;
+            }
+        }
+
+        throw new DaoException("Field '$fieldName' not found");
     }
 }

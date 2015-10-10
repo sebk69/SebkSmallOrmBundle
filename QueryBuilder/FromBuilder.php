@@ -39,13 +39,34 @@ class FromBuilder
     }
 
     /**
-     *
+     * Get model alias in query
+     * @return string
+     */
+    public function getAlias()
+    {
+        return $this->alias;
+    }
+
+    /**
+     * Get field object for sql
      * @param Field $field
      * @return string
      */
     protected function buildFieldForSql(Field $field)
     {
         return $this->alias.".".$field->getDbName()." AS ".$this->alias."_".$field->getModelName();
+    }
+
+    /**
+     * Get field identified by string for sql
+     * @param string $field
+     * @return string
+     */
+    protected function buildFieldIdentifiedByStringForSql($fieldNameInModel)
+    {
+        $field = $this->getDao()->getField($fieldNameInModel);
+        
+        return $this->buildFieldForSql($field);
     }
 
     /**
