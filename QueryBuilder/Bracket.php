@@ -20,7 +20,8 @@ class Bracket
      * Construct with parent object
      * @param mixed $parent
      */
-    public function __construct($parent) {
+    public function __construct($parent)
+    {
         $this->parent = $parent;
     }
 
@@ -92,7 +93,7 @@ class Bracket
             throw new BracketException("The first element of bracket has already been defined");
         }
 
-        if($condition === null) {
+        if ($condition === null) {
             $condition = new bracket($this);
         }
 
@@ -108,7 +109,7 @@ class Bracket
      */
     public function andBracket(Bracket $condition = null)
     {
-        if($condition === null) {
+        if ($condition === null) {
             $condition = new bracket($this);
         }
 
@@ -125,7 +126,7 @@ class Bracket
      */
     public function orBracket(Bracket $condition = null)
     {
-        if($condition === null) {
+        if ($condition === null) {
             $condition = new bracket($this);
         }
 
@@ -142,7 +143,7 @@ class Bracket
      */
     public function xorBracket(Bracket $condition = null)
     {
-        if($condition === null) {
+        if ($condition === null) {
             $condition = new bracket($this);
         }
 
@@ -158,14 +159,22 @@ class Bracket
      */
     public function getSql()
     {
-        $sql = "(";
-        foreach($this->conditions as $i => $condition) {
+        $sql = "";
+        
+        if ($this->parent instanceof Bracket) {
+            $sql .= "(";
+        }
+
+        foreach ($this->conditions as $i => $condition) {
             $sql .= $condition->getSql();
-            if(isset($this->operators[$i])) {
+            if (isset($this->operators[$i])) {
                 $sql .= " ".$this->operators[$i]." ";
             }
         }
-        $sql .= ")";
+        
+        if ($this->parent instanceof Bracket) {
+            $sql .= ")";
+        }
 
         return $sql;
     }
@@ -175,8 +184,9 @@ class Bracket
      * @return Bracket
      * @throws BracketException
      */
-    public function endBracket() {
-        if(!$this->parent instanceof Bracket) {
+    public function endBracket()
+    {
+        if (!$this->parent instanceof Bracket) {
             throw new BracketException("Use end bracket where parent is not bracket");
         }
 
@@ -188,8 +198,9 @@ class Bracket
      * @return QueryBuilder
      * @throws BracketException
      */
-    public function endWhere() {
-        if(!$this->parent instanceof QueryBuilder) {
+    public function endWhere()
+    {
+        if (!$this->parent instanceof QueryBuilder) {
             throw new BracketException("Use end where where parent is not query");
         }
 

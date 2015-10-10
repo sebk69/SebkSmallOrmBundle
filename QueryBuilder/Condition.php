@@ -4,6 +4,7 @@
  * Copyright 2015 - Sébastien Kus
  * Under GNU GPL V3 licence
  */
+
 namespace Sebk\SmallOrmBundle\QueryBuilder;
 
 use Sebk\SmallOrmBundle\Dao\Field;
@@ -19,6 +20,7 @@ class Condition
     const TYPE_SUBQUERY = "subquery";
     const TYPE_ARRAY    = "array";
     const TYPE_NULL     = "null";
+    const TYPE_CONSTANT = "constant";
 
     protected $var1;
     protected $type1;
@@ -28,12 +30,12 @@ class Condition
 
     public function __construct($var1, $operator, $var2 = null)
     {
-        $this->type1 = $this->getVarType($var1);
-        $this->type2 = $this->getVarType($var2);
+        $this->type1    = $this->getVarType($var1);
+        $this->type2    = $this->getVarType($var2);
         $this->checkOperator($operator);
         $this->operator = $operator;
-        $this->var1  = $var1;
-        $this->var2  = $var2;
+        $this->var1     = $var1;
+        $this->var2     = $var2;
     }
 
     public function getVarType($var)
@@ -62,7 +64,7 @@ class Condition
             return static::TYPE_VALUE;
         }
 
-        throw new ConditionException("Variable '$var' can't be interpreted");
+        return static::TYPE_CONSTANT;
     }
 
     public function checkOperator($operator)
@@ -81,11 +83,17 @@ class Condition
             case "not regexpr":
             case "regexpr":
                 if (!in_array($this->type1,
-                        array(static::TYPE_FIELD, static::TYPE_VALUE, static::TYPE_SUBQUERY))) {
+                        array(
+                        static::TYPE_FIELD,
+                        static::TYPE_VALUE,
+                        static::TYPE_SUBQUERY,
+                        static::TYPE_CONSTANT,
+                        )
+                    )) {
                     throw new ConditionException("Variable of type '".$this->type1."' is not possible with operator '$operator'");
                 }
                 if (!in_array($this->type2,
-                        array(static::TYPE_FIELD, static::TYPE_VALUE, static::TYPE_SUBQUERY))) {
+                        array(static::TYPE_FIELD, static::TYPE_VALUE, static::TYPE_SUBQUERY, static::TYPE_CONSTANT))) {
                     throw new ConditionException("Variable of type '".$this->type2."' is not possible with operator '$operator'");
                 }
                 break;
@@ -93,7 +101,7 @@ class Condition
             case "is":
             case "is not":
                 if (!in_array($this->type1,
-                        array(static::TYPE_FIELD, static::TYPE_VALUE, static::TYPE_SUBQUERY))) {
+                        array(static::TYPE_FIELD, static::TYPE_VALUE, static::TYPE_SUBQUERY, static::TYPE_CONSTANT))) {
                     throw new ConditionException("Variable of type '".$this->type1."' is not possible as left operator for operator '$operator'");
                 }
                 if ($this->type2 == static::TYPE_NULL) {
@@ -114,7 +122,7 @@ class Condition
             case "in":
             case "not in":
                 if (!in_array($this->type1,
-                        array(static::TYPE_FIELD, static::TYPE_VALUE))) {
+                        array(static::TYPE_FIELD, static::TYPE_VALUE, static::TYPE_CONSTANT))) {
                     throw new ConditionException("Variable of type '".$this->type1."' is not possible as left operator for operator '$operator'");
                 }
                 if (!in_array($this->type1,
@@ -135,7 +143,7 @@ class Condition
             case static::TYPE_FIELD:
                 $sql .= $var->getSql();
                 break;
-            
+
             case static::TYPE_VALUE:
                 $sql .= $var;
                 break;
@@ -150,6 +158,10 @@ class Condition
 
             case static::TYPE_SUBQUERY:
                 $sql .= "(".$var->getSql().")";
+                break;
+
+            case static::TYPE_CONSTANT:
+                $sql .= "'".addslashes($var)."'";
         }
 
         return $sql;
@@ -190,7 +202,7 @@ class Condition
             default:
                 throw new ConditionException("Operator '".$this->operator."' is not managed");
         }
-        
+
         return $sql;
     }
 }

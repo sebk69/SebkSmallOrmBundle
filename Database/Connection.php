@@ -52,7 +52,7 @@ class Connection
         $statement = $this->pdo->prepare($sql);
 
         foreach($params as $param => $value) {
-            $statement->bindParam($param, $value);
+            $statement->bindValue(":".$param, $value);
         }
         
         if($statement->execute()) {
