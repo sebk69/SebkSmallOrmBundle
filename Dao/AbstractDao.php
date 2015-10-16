@@ -21,6 +21,8 @@ abstract class AbstractDao
     private $dbTableName;
     private $primaryKeys;
     private $fields;
+    private $toOne  = array();
+    private $toMany = array();
 
     public function __construct(Connection $connection, $modelNamespace)
     {
@@ -159,7 +161,8 @@ abstract class AbstractDao
      */
     public function getRawResult(QueryBuilder $query)
     {
-        return $this->connection->execute($query->getSql(), $query->getParameters());
+        return $this->connection->execute($query->getSql(),
+                $query->getParameters());
     }
 
     /**
@@ -169,8 +172,8 @@ abstract class AbstractDao
      */
     public function hasField($fieldName)
     {
-        foreach($this->getFields() as $field) {
-            if($field->getModelName($field)) {
+        foreach ($this->getFields() as $field) {
+            if ($field->getModelName($field)) {
                 return true;
             }
         }
@@ -178,14 +181,154 @@ abstract class AbstractDao
         return false;
     }
 
+    /**
+     * Get field object
+     * @param string $fieldName
+     * @return Field
+     * @throws DaoException
+     */
     public function getField($fieldName)
     {
-        foreach($this->getFields() as $field) {
-            if($field->getModelName() == $fieldName) {
+        foreach ($this->getFields() as $field) {
+            if ($field->getModelName() == $fieldName) {
                 return $field;
             }
         }
 
         throw new DaoException("Field '$fieldName' not found");
+    }
+
+    /**
+     * Add a relation to model
+     * @param \Sebk\SmallOrmBundle\Dao\Relation $relation
+     * @return \Sebk\SmallOrmBundle\Dao\AbstractDao
+     * @throws DaoException
+     */
+    public function addRelation(Relation $relation)
+    {
+        if ($relation instanceof ToOneRelation) {
+            $this->toOne[$relation->getAlias()] = $relation;
+
+            return $this;
+        }
+
+        if ($relation instanceof ToManyRelation) {
+            $this->toMany[$relation->getAlias()] = $relation;
+
+            return $this;
+        }
+
+        throw new DaoException("Unknonw relation type");
+    }
+
+    /**
+     * Get result for a query
+     * @param QueryBuilder $query
+     * @return array
+     */
+    public function getResult(QueryBuilder $query)
+    {
+        $records = $this->getRawResult($query);
+        
+        return $this->buildResult($query, $records);
+    }
+
+    /**
+     * Convert resultset to objects
+     * @param QueryBuilder $query
+     * @param array $records
+     * @param string $alias
+     * @return array
+     */
+    protected function buildResult(QueryBuilder $query, $records, $alias = null)
+    {
+        $result = array();
+
+        $group = array();
+        foreach ($records as $record) {
+            $ids = $this->extractPrimaryKeysOfRecord($query, $alias, $record);
+            foreach ($ids as $idName => $idValue) {
+                if (count($group) && $savedIds[$idName] != $idValue) {
+                    $result[] = $this->populate($query, $alias, $group);
+                    $group    = array();
+                }
+
+                $group[] = $record;
+            }
+
+            $savedIds = $ids;
+        }
+        if (count($group)) {
+            $result[] = $this->populate($query, $alias, $group);
+        }
+
+        return $result;
+    }
+
+    /**
+     *
+     * @param QueryBuilder $query
+     * @param string $alias
+     * @param array $records
+     * @return Model
+     */
+    protected function populate(QueryBuilder $query, $alias, $records)
+    {
+        $model = $this->newModel();
+        $fields = $this->extractFieldsOfRecord($query, $alias, $records[0]);
+
+        foreach($fields as $property => $value) {
+            $model->$property = $value;
+        }
+
+        return $model;
+    }
+
+    /**
+     * Extract ids of this model of record
+     * @param QueryBuilder $query
+     * @param string $alias
+     * @param array $record
+     * @return array
+     * @throws DaoException
+     */
+    private function extractPrimaryKeysOfRecord(QueryBuilder $query, $alias, $record)
+    {
+        $queryRelation = $query->getRelation($alias);
+
+        $result = array();
+        foreach ($this->getPrimaryKeys() as $field) {
+            if (array_key_exists($queryRelation->getFieldAliasForSql($field), $record)) {
+                $result[$field->getModelName()] = $record[$queryRelation->getFieldAliasForSql($field)];
+            } else {
+                throw new DaoException("Record not match query");
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Extract fields of this model of record
+     * @param QueryBuilder $query
+     * @param string $alias
+     * @param array $record
+     * @return array
+     * @throws DaoException
+     */
+    private function extractFieldsOfRecord(QueryBuilder $query, $alias, $record)
+    {
+        $queryRelation = $query->getRelation($alias);
+
+        $result = array();
+        foreach ($this->getFields() as $field) {
+            if (array_key_exists($queryRelation->getFieldAliasForSql($field), $record)) {
+                $result[$field->getModelName()] = $record[$queryRelation->getFieldAliasForSql($field)];
+            } else {
+                throw new DaoException("Record not match query");
+            }
+        }
+
+        return $result;
     }
 }

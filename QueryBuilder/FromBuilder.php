@@ -55,7 +55,17 @@ class FromBuilder
      */
     protected function buildFieldForSql(Field $field)
     {
-        return $this->alias.".".$field->getDbName()." AS ".$this->alias."_".$field->getModelName();
+        return $this->alias.".".$field->getDbName()." AS ".$this->getFieldAliasForSql($field);
+    }
+
+    /**
+     * Get field alias for sql
+     * @param Field $field
+     * @return string
+     */
+    public function getFieldAliasForSql(Field $field)
+    {
+        return $this->alias."_".$field->getModelName();
     }
 
     /**

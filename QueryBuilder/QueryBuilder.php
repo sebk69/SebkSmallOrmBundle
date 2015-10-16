@@ -13,10 +13,10 @@ use Sebk\SmallOrmBundle\Dao\AbstractDao;
  */
 class QueryBuilder
 {
-    public $from;
-    public $where;
-    public $forcedSql;
-    public $parameters = array();
+    protected $from;
+    protected $where;
+    protected $forcedSql;
+    protected $parameters = array();
 
     /**
      * Construct QueryBuilder
@@ -41,6 +41,22 @@ class QueryBuilder
         $resultArray = $this->from->getFieldsForSqlAsArray();
 
         return implode(", ", $resultArray);
+    }
+
+    /**
+     * Get relation identified by alias
+     * If null => return from base relation
+     * @param string $alias
+     * @return FromBuilder
+     * @throws QueryBuilderException
+     */
+    public function getRelation($alias = null)
+    {
+        if($alias === null || $alias == $this->from->getAlias()) {
+            return $this->from;
+        }
+
+        throw new QueryBuilderException("Can't find relation '$alias'");
     }
 
     /**
@@ -149,5 +165,19 @@ class QueryBuilder
     public function getParameters()
     {
         return $this->parameters;
+    }
+
+    /**
+     * Get raw result of query
+     * @return array
+     */
+    public function getRawResult()
+    {
+        return $this->from->getDao()->getRawResult($this);
+    }
+
+    public function getResult()
+    {
+        return $this->from->getDao()->populate($this, $this->getRawResult());
     }
 }
