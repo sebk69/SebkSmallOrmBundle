@@ -47,7 +47,7 @@ class Dao
         foreach($this->config[$bundle]["connections"] as $connectionName => $connectionsParams) {
             $className = $connectionsParams["dao_namespace"].'\\'.$model;
             if(class_exists($className)) {
-                static::$loadedDao[$bundle][$model] = new $className($this->connectionFactory->get($connectionName), $connectionsParams["model_namespace"]);
+                static::$loadedDao[$bundle][$model] = new $className($this->connectionFactory->get($connectionName), $connectionsParams["model_namespace"], $model, $bundle);
                 return static::$loadedDao[$bundle][$model];
             }
         }

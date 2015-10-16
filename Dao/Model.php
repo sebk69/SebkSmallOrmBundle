@@ -13,6 +13,7 @@ namespace Sebk\SmallOrmBundle\Dao;
 class Model
 {
     private $modelName;
+    private $bundle;
     private $primaryKeys = array();
     private $fields      = array();
     private $fromDb      = false;
@@ -24,9 +25,10 @@ class Model
      * @param array $primaryKeys
      * @param array $fields
      */
-    public function __construct($modelName, $primaryKeys, $fields)
+    public function __construct($modelName, $bundle, $primaryKeys, $fields)
     {
         $this->modelName = $modelName;
+        $this->bundle = $bundle;
 
         foreach ($primaryKeys as $primaryKey) {
             $this->primaryKeys[$primaryKey] = null;
@@ -38,6 +40,22 @@ class Model
     }
 
     /**
+     * @return string
+     */
+    public function getModelName()
+    {
+        return $this->modelName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBundle()
+    {
+        return $this->bundle;
+    }
+
+    /**
      * Magic method to access getters and setters
      * @param string $method
      * @param array $args
@@ -46,6 +64,7 @@ class Model
      */
     public function __call($method, $args)
     {
+        echo $method;
         $type = substr($method, 0, 3);
         $name = strtolower(substr($method, 3));
         $typeField = $this->getFieldType($name);
@@ -67,7 +86,7 @@ class Model
                 return $this;
                 break;
             default:
-                throw new ModelException("Method '$method' doesn't extist in model '$this->modelName'");
+                throw new ModelException("Method '$method' doesn't extist in model '$this->modelName' of bundle '$this->bundle'");
         }
     }
 

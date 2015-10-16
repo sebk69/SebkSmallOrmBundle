@@ -18,16 +18,19 @@ abstract class AbstractDao
     protected $connection;
     protected $modelNamespace;
     private $modelName;
+    private $modelBundle;
     private $dbTableName;
     private $primaryKeys;
     private $fields;
     private $toOne  = array();
     private $toMany = array();
 
-    public function __construct(Connection $connection, $modelNamespace)
+    public function __construct(Connection $connection, $modelNamespace, $modelName, $modelBundle)
     {
         $this->connection     = $connection;
         $this->modelNamespace = $modelNamespace;
+        $this->modelName = $modelName;
+        $this->modelBundle = $modelBundle;
         $this->build();
     }
 
@@ -141,7 +144,7 @@ abstract class AbstractDao
             $fields[] = strtolower($field->getModelName());
         }
 
-        return new $modelClass($this->modelName, $primaryKeys, $fields);
+        return new $modelClass($this->modelName, $this->modelBundle, $primaryKeys, $fields);
     }
 
     /**
@@ -278,7 +281,8 @@ abstract class AbstractDao
         $fields = $this->extractFieldsOfRecord($query, $alias, $records[0]);
 
         foreach($fields as $property => $value) {
-            $model->$property = $value;
+            $method = "set".$property;
+            $model->$method($value);
         }
 
         return $model;
