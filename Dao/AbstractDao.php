@@ -8,6 +8,7 @@
 namespace Sebk\SmallOrmBundle\Dao;
 
 use Sebk\SmallOrmBundle\Database\Connection;
+use Sebk\SmallOrmBundle\Factory\Dao;
 use Sebk\SmallOrmBundle\QueryBuilder\QueryBuilder;
 
 /**
@@ -16,6 +17,7 @@ use Sebk\SmallOrmBundle\QueryBuilder\QueryBuilder;
 abstract class AbstractDao
 {
     protected $connection;
+    protected $daoFactory;
     protected $modelNamespace;
     private $modelName;
     private $modelBundle;
@@ -25,9 +27,10 @@ abstract class AbstractDao
     private $toOne  = array();
     private $toMany = array();
 
-    public function __construct(Connection $connection, $modelNamespace, $modelName, $modelBundle)
+    public function __construct(Connection $connection, Dao $daoFactory, $modelNamespace, $modelName, $modelBundle)
     {
         $this->connection     = $connection;
+        $this->daoFactory = $daoFactory;
         $this->modelNamespace = $modelNamespace;
         $this->modelName = $modelName;
         $this->modelBundle = $modelBundle;
@@ -334,5 +337,32 @@ abstract class AbstractDao
         }
 
         return $result;
+    }
+
+    /**
+     *
+     * @param array $keys
+     * @param string $toModel
+     * @param string $toBundle
+     * @return \Sebk\SmallOrmBundle\Dao\AbstractDao
+     * @throws DaoException
+     */
+    public function addToOne($keys, $toModel, $toBundle = null)
+    {
+        if($toBundle === null) {
+            $toBundle = $this->modelBundle;
+        }
+
+        foreach($keys as $thisKey => $otherKey) {
+            try {
+                $this->getField($thisKey);
+            } catch(DaoException $e) {
+                throw new DaoException("The field '$thisKey' of relation to '$toModel' of bundle '$toBundle' does not exists in '$this->modelName'");
+            }
+        }
+
+        $this->toOne[] = new ToOneRelation($toBundle, $toModel, $keys, $this->daoFactory);
+
+        return $this;
     }
 }
