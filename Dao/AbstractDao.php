@@ -34,6 +34,7 @@ abstract class AbstractDao
         $this->modelNamespace = $modelNamespace;
         $this->modelName = $modelName;
         $this->modelBundle = $modelBundle;
+        
         $this->build();
     }
 
@@ -147,7 +148,17 @@ abstract class AbstractDao
             $fields[] = strtolower($field->getModelName());
         }
 
-        return new $modelClass($this->modelName, $this->modelBundle, $primaryKeys, $fields);
+        $toOnes = array();
+        foreach ($this->toOne as $toOneAlias => $toOne) {
+            $toOnes[] = strtolower($toOneAlias);
+        }
+
+        $toManys = array();
+        foreach ($this->toMany as $toManyAlias => $toMany) {
+            $toManys[] = strtolower($toManyAlias);
+        }
+
+        return new $modelClass($this->modelName, $this->modelBundle, $primaryKeys, $fields, $toOnes, $toManys);
     }
 
     /**
@@ -248,6 +259,10 @@ abstract class AbstractDao
      */
     protected function buildResult(QueryBuilder $query, $records, $alias = null)
     {
+        if($alias === null) {
+            $alias = $query->getRelation()->getAlias();
+        }
+
         $result = array();
 
         $group = array();
@@ -286,6 +301,20 @@ abstract class AbstractDao
         foreach($fields as $property => $value) {
             $method = "set".$property;
             $model->$method($value);
+        }
+
+        foreach($query->getChildRelationsForAlias($alias) as $join) {
+            if($join->getDaoRelation() instanceof ToOneRelation) {
+                $method = "set".$join->getDaoRelation()->getAlias();
+                $toOneObject = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias())[0];
+                $model->$method($toOneObject);
+            }
+
+            if($join->getDaoRelation() instanceof ToManyRelation) {
+                $method = "set".$join->getDaoRelation()->getAlias();
+                $toOneObject = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias());
+                $model->$method($toOneObject);
+            }
         }
 
         return $model;
@@ -347,7 +376,7 @@ abstract class AbstractDao
      * @return \Sebk\SmallOrmBundle\Dao\AbstractDao
      * @throws DaoException
      */
-    public function addToOne($keys, $toModel, $toBundle = null)
+    public function addToOne($alias, $keys, $toModel, $toBundle = null)
     {
         if($toBundle === null) {
             $toBundle = $this->modelBundle;
@@ -361,8 +390,54 @@ abstract class AbstractDao
             }
         }
 
-        $this->toOne[] = new ToOneRelation($toBundle, $toModel, $keys, $this->daoFactory);
+        $this->toOne[$alias] = new ToOneRelation($toBundle, $toModel, $keys, $this->daoFactory, $alias);
 
         return $this;
+    }
+
+    /**
+     *
+     * @param array $keys
+     * @param string $toModel
+     * @param string $toBundle
+     * @return \Sebk\SmallOrmBundle\Dao\AbstractDao
+     * @throws DaoException
+     */
+    public function addToMany($alias, $keys, $toModel, $toBundle = null)
+    {
+        if($toBundle === null) {
+            $toBundle = $this->modelBundle;
+        }
+
+        foreach($keys as $thisKey => $otherKey) {
+            try {
+                $this->getField($thisKey);
+            } catch(DaoException $e) {
+                throw new DaoException("The field '$thisKey' of relation to '$toModel' of bundle '$toBundle' does not exists in '$this->modelName'");
+            }
+        }
+        
+        $this->toMany[$alias] = new ToManyRelation($toBundle, $toModel, $keys, $this->daoFactory, $alias);
+
+        return $this;
+    }
+
+    /**
+     * Get relation
+     * @param string $alias
+     * @return Relation
+     * @throws DaoException
+     */
+    public function getRelation($alias)
+    {
+        if(array_key_exists($alias, $this->toOne)) {
+            return $this->toOne[$alias];
+        }
+
+        if(array_key_exists($alias, $this->toMany)) {
+            return $this->toMany[$alias];
+        }
+
+        throw new DaoException("Relation '$alias' does not exists in '$this->modelName' of bundle '$this->modelBundle'");
     }
 }

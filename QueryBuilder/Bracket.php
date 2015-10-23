@@ -206,4 +206,18 @@ class Bracket
 
         return $this->parent;
     }
+
+    /**
+     * End join condition clause and return parent object for chain
+     * @return QueryBuilder
+     * @throws BracketException
+     */
+    public function endJoinCondition()
+    {
+        if (!$this->parent instanceof JoinBuilder) {
+            throw new BracketException("Use end join where parent is not join");
+        }
+
+        return $this->parent;
+    }
 }

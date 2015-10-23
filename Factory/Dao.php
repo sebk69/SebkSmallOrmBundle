@@ -4,6 +4,7 @@
  * Copyright 2015 - Sébastien Kus
  * Under GNU GPL V3 licence
  */
+
 namespace Sebk\SmallOrmBundle\Factory;
 
 /**
@@ -23,7 +24,7 @@ class Dao
     public function __construct(Connections $connectionFactory, $config)
     {
         $this->connectionFactory = $connectionFactory;
-        $this->config = $config;
+        $this->config            = $config;
     }
 
     /**
@@ -36,18 +37,21 @@ class Dao
      */
     public function get($bundle, $model)
     {
-        if(!isset($this->config[$bundle])) {
+        if (!isset($this->config[$bundle])) {
             throw new ConfigurationException("Bundle '$bundle' is not configured");
         }
 
-        if(isset(static::$loadedDao[$bundle][$model])) {
+        if (isset(static::$loadedDao[$bundle][$model])) {
             return static::$loadedDao[$bundle][$model];
         }
 
-        foreach($this->config[$bundle]["connections"] as $connectionName => $connectionsParams) {
+        foreach ($this->config[$bundle]["connections"] as $connectionName => $connectionsParams) {
             $className = $connectionsParams["dao_namespace"].'\\'.$model;
-            if(class_exists($className)) {
-                static::$loadedDao[$bundle][$model] = new $className($this->connectionFactory->get($connectionName), $this, $connectionsParams["model_namespace"], $model, $bundle);
+            if (class_exists($className)) {
+                static::$loadedDao[$bundle][$model] = new $className($this->connectionFactory->get($connectionName),
+                    $this, $connectionsParams["model_namespace"], $model,
+                    $bundle);
+                
                 return static::$loadedDao[$bundle][$model];
             }
         }

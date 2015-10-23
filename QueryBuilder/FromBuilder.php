@@ -24,7 +24,7 @@ class FromBuilder
      * @param AbstractDao $dao
      * @param string $alias
      */
-    public function __construct(AbstractDao $dao, $alias)
+    public function __construct(AbstractDao $dao = null, $alias)
     {
         $this->dao   = $dao;
         $this->alias = $alias;
@@ -98,7 +98,7 @@ class FromBuilder
      * Get from part for SQL statement
      * @return string
      */
-    public function getFromForSql()
+    public function getSql()
     {
         return $this->dao->getDbTableName()." AS ".$this->alias;
     }
