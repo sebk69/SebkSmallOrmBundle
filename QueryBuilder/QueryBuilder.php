@@ -103,8 +103,11 @@ class QueryBuilder
      * @param string $alias
      * @return \Sebk\SmallOrmBundle\QueryBuilder\JoinBuilder
      */
-    public function join($fromAlias, $relationAlias, $alias)
+    public function join($fromAlias, $relationAlias, $alias = null)
     {
+        if($alias == null) {
+            $alias = $relationAlias;
+        }
         $join                = new JoinBuilder(null, $alias);
         $join->setParent($this);
         $join->setFrom($this->getRelation($fromAlias), $relationAlias);
