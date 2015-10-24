@@ -15,7 +15,7 @@ use Sebk\SmallOrmBundle\Dao\AbstractDao;
 class QueryBuilder
 {
     protected $from;
-    protected $joins = array();
+    protected $joins      = array();
     protected $where;
     protected $forcedSql;
     protected $parameters = array();
@@ -41,8 +41,9 @@ class QueryBuilder
     public function getFieldsForSqlAsString()
     {
         $resultArray = $this->from->getFieldsForSqlAsArray();
-        foreach($this->joins as $join) {
-            $resultArray = array_merge($resultArray, $join->getFieldsForSqlAsArray());
+        foreach ($this->joins as $join) {
+            $resultArray = array_merge($resultArray,
+                $join->getFieldsForSqlAsArray());
         }
 
         return implode(", ", $resultArray);
@@ -77,8 +78,8 @@ class QueryBuilder
     public function getChildRelationsForAlias($alias)
     {
         $result = array();
-        foreach($this->joins as $join) {
-            if($join->getFromAlias() == $alias) {
+        foreach ($this->joins as $join) {
+            if ($join->getFromAlias() == $alias) {
                 $result[] = $join;
             }
         }
@@ -103,18 +104,72 @@ class QueryBuilder
      * @param string $alias
      * @return \Sebk\SmallOrmBundle\QueryBuilder\JoinBuilder
      */
-    public function join($fromAlias, $relationAlias, $alias = null)
+    public function join($fromAlias, $relationAlias, $alias = null,
+                         $type = "join")
     {
-        if($alias == null) {
+        if ($alias == null) {
             $alias = $relationAlias;
         }
-        $join                = new JoinBuilder(null, $alias);
+        switch ($type) {
+            case "join":
+                $join = new JoinBuilder(null, $alias);
+                break;
+            case "left join":
+                $join = new LeftJoinBuilder(null, $alias);
+                break;
+            case "inner join":
+                $join = new InnerJoinBuilder(null, $alias);
+                break;
+            case "full outer join":
+                $join = new FullOuterJoinBuilder(null, $alias);
+                break;
+
+            default:
+                new QueryBuilderException("Join type '$type' now exists");
+        }
+
         $join->setParent($this);
         $join->setFrom($this->getRelation($fromAlias), $relationAlias);
         $this->joins[$alias] = $join;
         $this->joins[$alias]->buildBaseConditions();
 
         return $join;
+    }
+
+    /**
+     * Add left join
+     * @param string $fromAlias
+     * @param string $relationAlias
+     * @param string $alias
+     * @return \Sebk\SmallOrmBundle\QueryBuilder\LeftJoinBuilder
+     */
+    public function leftJoin($fromAlias, $relationAlias, $alias = null)
+    {
+        return $this->join($fromAlias, $relationAlias, $alias, "left join");
+    }
+
+    /**
+     * Add inner join
+     * @param string $fromAlias
+     * @param string $relationAlias
+     * @param string $alias
+     * @return \Sebk\SmallOrmBundle\QueryBuilder\InnerJoinBuilder
+     */
+    public function innerJoin($fromAlias, $relationAlias, $alias = null)
+    {
+        return $this->join($fromAlias, $relationAlias, $alias, "inner join");
+    }
+
+    /**
+     * Add full outer join
+     * @param string $fromAlias
+     * @param string $relationAlias
+     * @param string $alias
+     * @return \Sebk\SmallOrmBundle\QueryBuilder\InnerJoinBuilder
+     */
+    public function fullOuterJoin($fromAlias, $relationAlias, $alias = null)
+    {
+        return $this->join($fromAlias, $relationAlias, $alias, "full outer join");
     }
 
     /**
@@ -143,7 +198,7 @@ class QueryBuilder
         $sql .= " FROM ";
         $sql .= $this->getFromForSqlAsString();
 
-        foreach($this->joins as $join) {
+        foreach ($this->joins as $join) {
             $sql .= $join->getSql();
         }
 
