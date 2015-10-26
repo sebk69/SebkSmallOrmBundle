@@ -10,7 +10,7 @@ namespace Sebk\SmallOrmBundle\Dao;
 /**
  * Class model
  */
-class Model
+class Model implements \JsonSerializable
 {
     private $modelName;
     private $bundle;
@@ -75,7 +75,7 @@ class Model
     public function __call($method, $args)
     {
         $type = substr($method, 0, 3);
-        $name = strtolower(substr($method, 3));
+        $name = lcfirst(substr($method, 3));
         $typeField = $this->getFieldType($name);
 
         switch ($type) {
@@ -132,5 +132,39 @@ class Model
         }
 
         throw new ModelException("Field '$field' doesn't exists in model '$this->modelName'");
+    }
+    
+    public function jsonSerialize() {
+        foreach($this->primaryKeys as $key => $value) {
+            $result[$key] = utf8_encode($value);
+        }
+        foreach($this->fields as $key => $value) {
+            $result[$key] = utf8_encode($value);
+        }
+        
+        foreach($this->toOnes as $key => $model)
+        {
+            if($model !== null) {
+                $result[$key] = $model->jsonSerialize();
+            } else {
+                $result[$key] = null;
+            }
+        }
+        
+        foreach($this->toManys as $key => $array)
+        {
+            if($array != null) {
+                $result[$key] = array();
+                foreach($array as $i => $model) {
+                    if($model !== null) {
+                        $result[$key][] = $model->jsonSerialize();
+                    } else {
+                        $result[$key][] = null;
+                    }
+                }
+            }
+        }
+        
+        return $result;
     }
 }

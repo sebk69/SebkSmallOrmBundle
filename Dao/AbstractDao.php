@@ -137,25 +137,25 @@ abstract class AbstractDao
     public function newModel()
     {
         $modelClass = $this->modelNamespace."\\".$this->modelName;
-
+        
         $primaryKeys = array();
         foreach ($this->primaryKeys as $primaryKey) {
-            $primaryKeys[] = strtolower($primaryKey->getModelName());
+            $primaryKeys[] = lcfirst($primaryKey->getModelName());
         }
 
         $fields = array();
         foreach ($this->fields as $field) {
-            $fields[] = strtolower($field->getModelName());
+            $fields[] = lcfirst($field->getModelName());
         }
 
         $toOnes = array();
         foreach ($this->toOne as $toOneAlias => $toOne) {
-            $toOnes[] = strtolower($toOneAlias);
+            $toOnes[] = lcFirst($toOneAlias);
         }
 
         $toManys = array();
         foreach ($this->toMany as $toManyAlias => $toMany) {
-            $toManys[] = strtolower($toManyAlias);
+            $toManys[] = lcFirst($toManyAlias);
         }
 
         return new $modelClass($this->modelName, $this->modelBundle, $primaryKeys, $fields, $toOnes, $toManys);
@@ -306,8 +306,8 @@ abstract class AbstractDao
         foreach($query->getChildRelationsForAlias($alias) as $join) {
             if($join->getDaoRelation() instanceof ToOneRelation) {
                 $method = "set".$join->getDaoRelation()->getAlias();
-                $toOneObject = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias())[0];
-                $model->$method($toOneObject);
+                $toOneObjects = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias());
+                $model->$method($toOneObjects[0]);
             }
 
             if($join->getDaoRelation() instanceof ToManyRelation) {

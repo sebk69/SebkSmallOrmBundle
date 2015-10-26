@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is a part of SebkSmallOrmBundle
  * Copyright 2015 - Sébastien Kus
@@ -12,21 +13,22 @@ use Sebk\SmallOrmBundle\Dao\AbstractDao;
 /**
  * Sql query builder
  */
-class QueryBuilder
-{
+class QueryBuilder {
+
     protected $from;
-    protected $joins      = array();
+    protected $joins = array();
     protected $where;
     protected $forcedSql;
     protected $parameters = array();
+    protected $offset = null;
+    protected $limit = null;
 
     /**
      * Construct QueryBuilder
      * @param AbstractDao $baseDao
      * @param string $baseAlias
      */
-    public function __construct(AbstractDao $baseDao, $baseAlias = null)
-    {
+    public function __construct(AbstractDao $baseDao, $baseAlias = null) {
         if ($baseAlias == null) {
             $baseAlias = $baseDao->getModelName();
         }
@@ -38,12 +40,10 @@ class QueryBuilder
      * Format select part as string
      * @return string
      */
-    public function getFieldsForSqlAsString()
-    {
+    public function getFieldsForSqlAsString() {
         $resultArray = $this->from->getFieldsForSqlAsArray();
         foreach ($this->joins as $join) {
-            $resultArray = array_merge($resultArray,
-                $join->getFieldsForSqlAsArray());
+            $resultArray = array_merge($resultArray, $join->getFieldsForSqlAsArray());
         }
 
         return implode(", ", $resultArray);
@@ -56,8 +56,7 @@ class QueryBuilder
      * @return FromBuilder
      * @throws QueryBuilderException
      */
-    public function getRelation($alias = null)
-    {
+    public function getRelation($alias = null) {
         if ($alias === null || $alias == $this->from->getAlias()) {
             return $this->from;
         }
@@ -75,8 +74,7 @@ class QueryBuilder
      *
      * @return array
      */
-    public function getChildRelationsForAlias($alias)
-    {
+    public function getChildRelationsForAlias($alias) {
         $result = array();
         foreach ($this->joins as $join) {
             if ($join->getFromAlias() == $alias) {
@@ -90,8 +88,7 @@ class QueryBuilder
      * Format from part as string
      * @return string
      */
-    public function getFromForSqlAsString()
-    {
+    public function getFromForSqlAsString() {
         $result = $this->from->getSql();
 
         return $result;
@@ -104,9 +101,7 @@ class QueryBuilder
      * @param string $alias
      * @return \Sebk\SmallOrmBundle\QueryBuilder\JoinBuilder
      */
-    public function join($fromAlias, $relationAlias, $alias = null,
-                         $type = "join")
-    {
+    public function join($fromAlias, $relationAlias, $alias = null, $type = "join") {
         if ($alias == null) {
             $alias = $relationAlias;
         }
@@ -143,8 +138,7 @@ class QueryBuilder
      * @param string $alias
      * @return \Sebk\SmallOrmBundle\QueryBuilder\LeftJoinBuilder
      */
-    public function leftJoin($fromAlias, $relationAlias, $alias = null)
-    {
+    public function leftJoin($fromAlias, $relationAlias, $alias = null) {
         return $this->join($fromAlias, $relationAlias, $alias, "left join");
     }
 
@@ -155,8 +149,7 @@ class QueryBuilder
      * @param string $alias
      * @return \Sebk\SmallOrmBundle\QueryBuilder\InnerJoinBuilder
      */
-    public function innerJoin($fromAlias, $relationAlias, $alias = null)
-    {
+    public function innerJoin($fromAlias, $relationAlias, $alias = null) {
         return $this->join($fromAlias, $relationAlias, $alias, "inner join");
     }
 
@@ -167,8 +160,7 @@ class QueryBuilder
      * @param string $alias
      * @return \Sebk\SmallOrmBundle\QueryBuilder\InnerJoinBuilder
      */
-    public function fullOuterJoin($fromAlias, $relationAlias, $alias = null)
-    {
+    public function fullOuterJoin($fromAlias, $relationAlias, $alias = null) {
         return $this->join($fromAlias, $relationAlias, $alias, "full outer join");
     }
 
@@ -176,8 +168,7 @@ class QueryBuilder
      * Initialize where clause
      * @return Bracket
      */
-    public function where()
-    {
+    public function where() {
         $this->where = new Bracket($this);
 
         return $this->where;
@@ -187,8 +178,7 @@ class QueryBuilder
      * Return sql statement for this query
      * @return string
      */
-    public function getSql()
-    {
+    public function getSql() {
         if ($this->forcedSql !== null) {
             return $this->forcedSql;
         }
@@ -206,16 +196,38 @@ class QueryBuilder
             $sql .= " WHERE ";
             $sql .= $this->where->getSql();
         }
-
+        
+        if($this->offset !== null) {
+            $sql .= " LIMIT ".$this->offset.", ".$this->limit;
+        }
+        
         return $sql;
+    }
+    
+    /**
+     * Limit result
+     * @param string $offset
+     * @param string $limit
+     */
+    public function limit($offset, $limit) {
+        $this->offset = $offset;
+        $this->limit = $limit;
+        
+        return $this;
+    }
+    
+    public function paginate($page, $pageSize) {
+        $this->offset = ($page - 1) * $pageSize;
+        $this->limit = $pageSize;
+        
+        return $this;
     }
 
     /**
      * Is sql has been forced
      * @return boolean
      */
-    public function isSqlHasBeenForced()
-    {
+    public function isSqlHasBeenForced() {
         return $this->forcedSql === null;
     }
 
@@ -223,8 +235,7 @@ class QueryBuilder
      * Force sql to execute
      * @param string $sql
      */
-    public function forceSql($sql)
-    {
+    public function forceSql($sql) {
         $this->forcedSql = $sql;
 
         return $this;
@@ -237,8 +248,7 @@ class QueryBuilder
      * @return \Sebk\SmallOrmBundle\QueryBuilder\ConditionField
      * @throws QueryBuilderException
      */
-    public function getFieldForCondition($fieldName, $modelAlias)
-    {
+    public function getFieldForCondition($fieldName, $modelAlias) {
         if ($this->from->getAlias() == $modelAlias) {
             if ($this->from->getDao()->hasField($fieldName)) {
                 return new ConditionField($this->from, $fieldName);
@@ -260,8 +270,7 @@ class QueryBuilder
      * Return where to be completed
      * @return Bracket
      */
-    public function getWhere()
-    {
+    public function getWhere() {
         return $this->where;
     }
 
@@ -271,8 +280,7 @@ class QueryBuilder
      * @param string $value
      * @return \Sebk\SmallOrmBundle\QueryBuilder\QueryBuilder
      */
-    public function setParameter($paramName, $value)
-    {
+    public function setParameter($paramName, $value) {
         $this->parameters[$paramName] = $value;
 
         return $this;
@@ -282,8 +290,7 @@ class QueryBuilder
      * Get query parameters
      * @return array
      */
-    public function getParameters()
-    {
+    public function getParameters() {
         return $this->parameters;
     }
 
@@ -291,13 +298,12 @@ class QueryBuilder
      * Get raw result of query
      * @return array
      */
-    public function getRawResult()
-    {
+    public function getRawResult() {
         return $this->from->getDao()->getRawResult($this);
     }
 
-    public function getResult()
-    {
+    public function getResult() {
         return $this->from->getDao()->populate($this, $this->getRawResult());
     }
+
 }
