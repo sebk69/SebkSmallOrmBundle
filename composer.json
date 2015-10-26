@@ -1,0 +1,11 @@
+{
+    "name": "Sebk/SmallOrmBundle",
+    "license": "",
+    "type": "project",
+    "description": "Small Orm for Symfony",
+    "autoload": {
+        "psr-4": { "Sebk\\SmallOrmBundle\\": "" }
+    },
+    "require-dev": {
+    }
+}
