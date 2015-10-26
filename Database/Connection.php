@@ -13,6 +13,7 @@ namespace Sebk\SmallOrmBundle\Database;
 class Connection
 {
     protected $pdo;
+    protected $database;
 
     /**
      * Construct and open connection
@@ -25,6 +26,8 @@ class Connection
      */
     public function __construct($dbType, $host, $database, $user, $password)
     {
+        $this->database = $database;
+
         switch($dbType) {
             case "mysql":
                 $connectionString = "mysql:dbname=$database;host=$host";
@@ -39,6 +42,15 @@ class Connection
         } catch(\PDOException $e) {
             throw new ConnectionException($e->getMessage());
         }
+    }
+
+    /**
+     *
+     * @return string
+     */
+    public function getDatabase()
+    {
+        return $this->database;
     }
 
     /**

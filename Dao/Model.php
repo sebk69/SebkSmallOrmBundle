@@ -15,11 +15,12 @@ class Model implements \JsonSerializable
     private $modelName;
     private $bundle;
     private $primaryKeys = array();
+    private $originalPrimaryKeys = array();
     private $fields      = array();
     private $toOnes      = array();
     private $toManys     = array();
-    private $fromDb      = false;
-    private $altered     = false;
+    public $fromDb       = false;
+    public $altered      = false;
 
     /**
      * Construct model
@@ -27,24 +28,26 @@ class Model implements \JsonSerializable
      * @param array $primaryKeys
      * @param array $fields
      */
-    public function __construct($modelName, $bundle, $primaryKeys, $fields, $toOnes, $toManys)
+    public function __construct($modelName, $bundle, $primaryKeys, $fields,
+                                $toOnes, $toManys)
     {
         $this->modelName = $modelName;
-        $this->bundle = $bundle;
+        $this->bundle    = $bundle;
 
         foreach ($primaryKeys as $primaryKey) {
             $this->primaryKeys[$primaryKey] = null;
+            $this->originalPrimaryKeys[$primaryKey] = null;
         }
-        
+
         foreach ($fields as $field) {
             $this->fields[$field] = null;
         }
 
-        foreach($toOnes as $toOne) {
+        foreach ($toOnes as $toOne) {
             $this->toOnes[$toOne] = null;
         }
 
-        foreach($toManys as $toMany) {
+        foreach ($toManys as $toMany) {
             $this->toManys[$toMany] = null;
         }
     }
@@ -74,30 +77,30 @@ class Model implements \JsonSerializable
      */
     public function __call($method, $args)
     {
-        $type = substr($method, 0, 3);
-        $name = lcfirst(substr($method, 3));
+        $type      = substr($method, 0, 3);
+        $name      = lcfirst(substr($method, 3));
         $typeField = $this->getFieldType($name);
 
         switch ($type) {
             case "get":
-                if($typeField == "primaryKeys") {
+                if ($typeField == "primaryKeys") {
                     return $this->primaryKeys[$name];
-                } elseif($typeField == "field") {
+                } elseif ($typeField == "field") {
                     return $this->fields[$name];
-                } elseif($typeField == "toOne") {
+                } elseif ($typeField == "toOne") {
                     return $this->toOnes[$name];
-                } elseif($typeField == "toMany") {
+                } elseif ($typeField == "toMany") {
                     return $this->toManys[$name];
                 }
                 break;
             case "set":
-                if($typeField == "primaryKeys") {
+                if ($typeField == "primaryKeys") {
                     $this->primaryKeys[$name] = $args[0];
-                } elseif($typeField == "field") {
+                } elseif ($typeField == "field") {
                     $this->fields[$name] = $args[0];
-                } elseif($typeField == "toOne") {
+                } elseif ($typeField == "toOne") {
                     $this->toOnes[$name] = $args[0];
-                } elseif($typeField == "toMany") {
+                } elseif ($typeField == "toMany") {
                     $this->toManys[$name] = $args[0];
                 }
                 return $this;
@@ -105,6 +108,16 @@ class Model implements \JsonSerializable
             default:
                 throw new ModelException("Method '$method' doesn't extist in model '$this->modelName' of bundle '$this->bundle'");
         }
+    }
+    
+    public function setOriginalPrimaryKeys()
+    {
+        $this->originalPrimaryKeys = $this->primaryKeys;
+    }
+
+    public function getOriginalPrimaryKeys()
+    {
+        return $this->originalPrimaryKeys;
     }
 
     /**
@@ -126,45 +139,83 @@ class Model implements \JsonSerializable
         if (array_key_exists($field, $this->toOnes)) {
             return "toOne";
         }
-        
+
         if (array_key_exists($field, $this->toManys)) {
             return "toMany";
         }
 
         throw new ModelException("Field '$field' doesn't exists in model '$this->modelName'");
     }
-    
-    public function jsonSerialize() {
-        foreach($this->primaryKeys as $key => $value) {
-            $result[$key] = utf8_encode($value);
-        }
-        foreach($this->fields as $key => $value) {
-            $result[$key] = utf8_encode($value);
-        }
-        
-        foreach($this->toOnes as $key => $model)
-        {
-            if($model !== null) {
-                $result[$key] = $model->jsonSerialize();
+
+    /**
+     *
+     * @return array
+     */
+    public function getPrimaryKeys()
+    {
+        return $this->primaryKeys;
+    }
+
+    /**
+     *
+     * @param boolean $dependecies
+     * @return array
+     */
+    public function asArray($dependecies = true, $onlyFields = false)
+    {
+        $result = array();
+
+        foreach ($this->primaryKeys as $key => $value) {
+            if ($value !== null) {
+                $result[$key] = utf8_encode($value);
             } else {
                 $result[$key] = null;
             }
         }
-        
-        foreach($this->toManys as $key => $array)
-        {
-            if($array != null) {
-                $result[$key] = array();
-                foreach($array as $i => $model) {
-                    if($model !== null) {
-                        $result[$key][] = $model->jsonSerialize();
-                    } else {
-                        $result[$key][] = null;
+        foreach ($this->fields as $key => $value) {
+            if ($value !== null) {
+                $result[$key] = utf8_encode($value);
+            } else {
+                $result[$key] = null;
+            }
+        }
+
+        if ($dependecies) {
+            foreach ($this->toOnes as $key => $model) {
+                if ($model !== null) {
+                    $result[$key] = $model->jsonSerialize();
+                } else {
+                    $result[$key] = null;
+                }
+            }
+
+            foreach ($this->toManys as $key => $array) {
+                if ($array != null) {
+                    $result[$key] = array();
+                    foreach ($array as $i => $model) {
+                        if ($model !== null) {
+                            $result[$key][] = $model->jsonSerialize();
+                        } else {
+                            $result[$key][] = null;
+                        }
                     }
                 }
             }
+
+            if (!$onlyFields) {
+                $result["fromDb"] = $this->fromDb;
+            }
         }
-        
+
         return $result;
+    }
+
+    /**
+     * 
+     * @return array
+     */
+    public function jsonSerialize()
+    {
+        return $this->asArray();
     }
 }
