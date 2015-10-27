@@ -15,7 +15,7 @@ class Model implements \JsonSerializable
     private $modelName;
     private $bundle;
     private $primaryKeys = array();
-    private $originalPrimaryKeys = array();
+    private $originalPrimaryKeys = null;
     private $fields      = array();
     private $toOnes      = array();
     private $toManys     = array();
@@ -36,7 +36,6 @@ class Model implements \JsonSerializable
 
         foreach ($primaryKeys as $primaryKey) {
             $this->primaryKeys[$primaryKey] = null;
-            $this->originalPrimaryKeys[$primaryKey] = null;
         }
 
         foreach ($fields as $field) {

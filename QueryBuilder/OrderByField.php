@@ -40,6 +40,6 @@ class OrderByField
     }
 
     public function getSql() {
-        return $this->model->getAlias().".".$this->model->getDao()->getField($this->fieldNameInModel)->getDbName()." ".$this->sens." ";
+        return $this->model->getFieldAliasIdentifiedByStringForSql($this->fieldNameInModel)." ".$this->sens." ";
     }
 }

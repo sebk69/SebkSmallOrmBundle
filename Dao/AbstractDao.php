@@ -522,6 +522,11 @@ abstract class AbstractDao
             $parms[$key] = $val;
         }
         $sql .= implode(", ", $queryFields);
+        
+        if($model->getOriginalPrimaryKeys() === null) {
+            $model->setOriginalPrimaryKeys();
+        }
+        
         $sql .= " WHERE ";
         $conds = array();
         foreach ($model->getOriginalPrimaryKeys() as $originalPk => $originalValue) {
@@ -530,18 +535,42 @@ abstract class AbstractDao
         }
         $sql .= implode(" AND ", $conds);
 
-        var_dump($sql);
-
         $this->connection->execute($sql, $parms);
 
-        if ($this->connection->lastInsertId() !== null) {
-            foreach ($model->getPrimaryKeys() as $key => $value) {
-                if ($value === null) {
-                    $method = "set".$key;
-                    $model->$method($this->connection->lastInsertId());
-                }
-            }
+        $model->fromDb  = true;
+        $model->altered = false;
+
+        return $this;
+    }
+    
+    /**
+     * Delete a record
+     * @param \Sebk\SmallOrmBundle\Dao\Model $model
+     * @return \Sebk\SmallOrmBundle\Dao\AbstractDao
+     * @throws DaoException
+     */
+    public function delete(Model $model)
+    {
+        if (!$model->fromDb) {
+            throw new DaoException("Try delete a record not from db from '$this->modelBundle' '$this->modelName' model");
         }
+        $parms = array();
+
+        $sql    = "DELETE ".$this->connection->getDatabase().".".$this->dbTableName." ";
+        
+        if($model->getOriginalPrimaryKeys() === null) {
+            $model->setOriginalPrimaryKeys();
+        }
+        
+        $sql .= " WHERE ";
+        $conds = array();
+        foreach ($model->getOriginalPrimaryKeys() as $originalPk => $originalValue) {
+            $conds[] = $this->getDbNameFromModelName($originalPk)." = :".$originalPk."OriginalPk";
+            $parms[$originalPk."OriginalPk"] = $originalValue;
+        }
+        $sql .= implode(" AND ", $conds);
+
+        $this->connection->execute($sql, $parms);
 
         $model->fromDb  = true;
         $model->altered = false;
@@ -576,7 +605,58 @@ abstract class AbstractDao
             $method = "set".$prop;
             $model->$method($value);
         }
+        
+        if($setOriginalKeys) {
+            $model->setOriginalPrimaryKeys();
+        }
 
         return $model;
+    }
+    
+    /**
+     * 
+     * @param array $conds
+     * @return array
+     */
+    public function findBy($conds)
+    {
+        $query = $this->createQueryBuilder(lcfirst($this->modelName));
+        $where = $query->where();
+        
+        $first = true;
+        foreach($conds as $field => $value) {
+            if($first) {
+                $where->firstCondition($query->getFieldForCondition ($field), "=", ":".$field);
+                $query->setParameter($field, $value);
+            } else {
+                $where->andCondition($query->getFieldForCondition ($field), "=", ":".$field);
+                $query->setParameter($field, $value);
+            }
+            
+            $first = false;
+        }
+        
+        return $this->getResult($query);
+    }
+    
+    /**
+     * 
+     * @param array $conds
+     * @return Model
+     * @throws DaoException
+     */
+    public function findOneBy($conds)
+    {
+        $results = $this->findBy($conds);
+        
+        if(count($results) == 0) {
+            throw new DaoException("Find one with no result");
+        }
+        
+        if(count($results) > 1) {
+            throw new DaoException("Find one with multiple result");
+        }
+        
+        return $results[0];
     }
 }

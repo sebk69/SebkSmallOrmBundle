@@ -67,13 +67,24 @@ class FromBuilder
     {
         return $this->alias."_".$field->getModelName();
     }
+    
+    /**
+     * Get field alias for sql
+     * @return array
+     */
+    public function getFieldAliasIdentifiedByStringForSql($fieldNameInModel)
+    {
+        $field = $this->getDao()->getField($fieldNameInModel);
+        
+        return $this->getFieldAliasForSql($field);
+    }
 
     /**
      * Get field identified by string for sql
      * @param string $field
      * @return string
      */
-    protected function buildFieldIdentifiedByStringForSql($fieldNameInModel)
+    public function buildFieldIdentifiedByStringForSql($fieldNameInModel)
     {
         $field = $this->getDao()->getField($fieldNameInModel);
         

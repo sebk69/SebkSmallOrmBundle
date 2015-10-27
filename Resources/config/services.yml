@@ -5,3 +5,6 @@ services:
     sebk_small_orm_dao:
         class: Sebk\SmallOrmBundle\Factory\Dao
         arguments: [@sebk_small_orm_connections, %sebk_small_orm.bundles%]
+    sebk_small_orm_validator:
+        class: Sebk\SmallOrmBundle\Factory\Validator
+        arguments: [@sebk_small_orm_dao, %sebk_small_orm.bundles%]

@@ -193,7 +193,7 @@ class QueryBuilder {
             $sql .= $join->getSql();
         }
 
-        if ($this->where !== null) {
+        if ($this->where !== null && trim($this->where->getSql())) {
             $sql .= " WHERE ";
             $sql .= $this->where->getSql();
         }
