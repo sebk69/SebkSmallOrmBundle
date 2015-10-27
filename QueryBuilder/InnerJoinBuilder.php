@@ -12,6 +12,7 @@ namespace Sebk\SmallOrmBundle\QueryBuilder;
  */
 class InnerJoinBuilder extends JoinBuilder
 {
+
     /**
      *
      * @param null $type

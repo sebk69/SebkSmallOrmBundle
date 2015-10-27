@@ -24,11 +24,12 @@ class ConditionField
      */
     public function __construct(FromBuilder $model, $fieldNameInModel)
     {
-        $this->model = $model;
+        $this->model            = $model;
         $this->fieldNameInModel = $fieldNameInModel;
     }
 
-    public function getSql() {
+    public function getSql()
+    {
         return $this->model->getAlias().".".$this->model->getDao()->getField($this->fieldNameInModel)->getDbName();
     }
 }

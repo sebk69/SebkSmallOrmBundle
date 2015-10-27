@@ -93,7 +93,8 @@ class Condition
                     throw new ConditionException("Variable of type '".$this->type1."' is not possible with operator '$operator'");
                 }
                 if (!in_array($this->type2,
-                        array(static::TYPE_FIELD, static::TYPE_VALUE, static::TYPE_SUBQUERY, static::TYPE_CONSTANT))) {
+                        array(static::TYPE_FIELD, static::TYPE_VALUE, static::TYPE_SUBQUERY,
+                        static::TYPE_CONSTANT))) {
                     throw new ConditionException("Variable of type '".$this->type2."' is not possible with operator '$operator'");
                 }
                 break;
@@ -101,7 +102,8 @@ class Condition
             case "is":
             case "is not":
                 if (!in_array($this->type1,
-                        array(static::TYPE_FIELD, static::TYPE_VALUE, static::TYPE_SUBQUERY, static::TYPE_CONSTANT))) {
+                        array(static::TYPE_FIELD, static::TYPE_VALUE, static::TYPE_SUBQUERY,
+                        static::TYPE_CONSTANT))) {
                     throw new ConditionException("Variable of type '".$this->type1."' is not possible as left operator for operator '$operator'");
                 }
                 if ($this->type2 == static::TYPE_NULL) {

@@ -51,7 +51,7 @@ class Dao
                 static::$loadedDao[$bundle][$model] = new $className($this->connectionFactory->get($connectionName),
                     $this, $connectionsParams["model_namespace"], $model,
                     $bundle);
-                
+
                 return static::$loadedDao[$bundle][$model];
             }
         }

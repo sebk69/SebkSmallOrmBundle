@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is a part of SebkSmallOrmBundle
  * Copyright 2015 - Sébastien Kus
@@ -67,7 +66,7 @@ class FromBuilder
     {
         return $this->alias."_".$field->getModelName();
     }
-    
+
     /**
      * Get field alias for sql
      * @return array
@@ -75,7 +74,7 @@ class FromBuilder
     public function getFieldAliasIdentifiedByStringForSql($fieldNameInModel)
     {
         $field = $this->getDao()->getField($fieldNameInModel);
-        
+
         return $this->getFieldAliasForSql($field);
     }
 
@@ -87,7 +86,7 @@ class FromBuilder
     public function buildFieldIdentifiedByStringForSql($fieldNameInModel)
     {
         $field = $this->getDao()->getField($fieldNameInModel);
-        
+
         return $this->buildFieldForSql($field);
     }
 

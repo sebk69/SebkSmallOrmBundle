@@ -9,4 +9,5 @@ namespace Sebk\SmallOrmBundle\Dao;
 
 class ModelException extends \Exception
 {
+
 }

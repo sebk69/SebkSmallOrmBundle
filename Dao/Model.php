@@ -14,13 +14,13 @@ class Model implements \JsonSerializable
 {
     private $modelName;
     private $bundle;
-    private $primaryKeys = array();
+    private $primaryKeys         = array();
     private $originalPrimaryKeys = null;
-    private $fields      = array();
-    private $toOnes      = array();
-    private $toManys     = array();
-    public $fromDb       = false;
-    public $altered      = false;
+    private $fields              = array();
+    private $toOnes              = array();
+    private $toManys             = array();
+    public $fromDb               = false;
+    public $altered              = false;
 
     /**
      * Construct model
@@ -108,7 +108,7 @@ class Model implements \JsonSerializable
                 throw new ModelException("Method '$method' doesn't extist in model '$this->modelName' of bundle '$this->bundle'");
         }
     }
-    
+
     public function setOriginalPrimaryKeys()
     {
         $this->originalPrimaryKeys = $this->primaryKeys;

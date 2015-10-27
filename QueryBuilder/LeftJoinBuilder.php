@@ -12,6 +12,7 @@ namespace Sebk\SmallOrmBundle\QueryBuilder;
  */
 class LeftJoinBuilder extends JoinBuilder
 {
+
     /**
      *
      * @param null $type

@@ -519,18 +519,18 @@ abstract class AbstractDao
         $fields = $model->asArray(false, true);
         foreach ($fields as $key => $val) {
             $queryFields[$key] = $this->getDbNameFromModelName($key)." = :$key";
-            $parms[$key] = $val;
+            $parms[$key]       = $val;
         }
         $sql .= implode(", ", $queryFields);
-        
-        if($model->getOriginalPrimaryKeys() === null) {
+
+        if ($model->getOriginalPrimaryKeys() === null) {
             $model->setOriginalPrimaryKeys();
         }
-        
+
         $sql .= " WHERE ";
         $conds = array();
         foreach ($model->getOriginalPrimaryKeys() as $originalPk => $originalValue) {
-            $conds[] = $this->getDbNameFromModelName($originalPk)." = :".$originalPk."OriginalPk";
+            $conds[]                         = $this->getDbNameFromModelName($originalPk)." = :".$originalPk."OriginalPk";
             $parms[$originalPk."OriginalPk"] = $originalValue;
         }
         $sql .= implode(" AND ", $conds);
@@ -542,7 +542,7 @@ abstract class AbstractDao
 
         return $this;
     }
-    
+
     /**
      * Delete a record
      * @param \Sebk\SmallOrmBundle\Dao\Model $model
@@ -556,16 +556,16 @@ abstract class AbstractDao
         }
         $parms = array();
 
-        $sql    = "DELETE ".$this->connection->getDatabase().".".$this->dbTableName." ";
-        
-        if($model->getOriginalPrimaryKeys() === null) {
+        $sql = "DELETE ".$this->connection->getDatabase().".".$this->dbTableName." ";
+
+        if ($model->getOriginalPrimaryKeys() === null) {
             $model->setOriginalPrimaryKeys();
         }
-        
+
         $sql .= " WHERE ";
         $conds = array();
         foreach ($model->getOriginalPrimaryKeys() as $originalPk => $originalValue) {
-            $conds[] = $this->getDbNameFromModelName($originalPk)." = :".$originalPk."OriginalPk";
+            $conds[]                         = $this->getDbNameFromModelName($originalPk)." = :".$originalPk."OriginalPk";
             $parms[$originalPk."OriginalPk"] = $originalValue;
         }
         $sql .= implode(" AND ", $conds);
@@ -584,7 +584,7 @@ abstract class AbstractDao
      */
     public function persist(Model $model)
     {
-        if($model->fromDb) {
+        if ($model->fromDb) {
             $this->update($model);
         } else {
             $this->insert($model);
@@ -601,18 +601,18 @@ abstract class AbstractDao
     {
         $model = $this->newModel();
 
-        foreach($stdClass as $prop => $value) {
+        foreach ($stdClass as $prop => $value) {
             $method = "set".$prop;
             $model->$method($value);
         }
-        
-        if($setOriginalKeys) {
+
+        if ($setOriginalKeys) {
             $model->setOriginalPrimaryKeys();
         }
 
         return $model;
     }
-    
+
     /**
      * 
      * @param array $conds
@@ -622,23 +622,25 @@ abstract class AbstractDao
     {
         $query = $this->createQueryBuilder(lcfirst($this->modelName));
         $where = $query->where();
-        
+
         $first = true;
-        foreach($conds as $field => $value) {
-            if($first) {
-                $where->firstCondition($query->getFieldForCondition ($field), "=", ":".$field);
+        foreach ($conds as $field => $value) {
+            if ($first) {
+                $where->firstCondition($query->getFieldForCondition($field),
+                    "=", ":".$field);
                 $query->setParameter($field, $value);
             } else {
-                $where->andCondition($query->getFieldForCondition ($field), "=", ":".$field);
+                $where->andCondition($query->getFieldForCondition($field), "=",
+                    ":".$field);
                 $query->setParameter($field, $value);
             }
-            
+
             $first = false;
         }
-        
+
         return $this->getResult($query);
     }
-    
+
     /**
      * 
      * @param array $conds
@@ -648,15 +650,15 @@ abstract class AbstractDao
     public function findOneBy($conds)
     {
         $results = $this->findBy($conds);
-        
-        if(count($results) == 0) {
+
+        if (count($results) == 0) {
             throw new DaoException("Find one with no result");
         }
-        
-        if(count($results) > 1) {
+
+        if (count($results) > 1) {
             throw new DaoException("Find one with multiple result");
         }
-        
+
         return $results[0];
     }
 }

@@ -4,6 +4,7 @@
  * Copyright 2015 - Sébastien Kus
  * Under GNU GPL V3 licence
  */
+
 namespace Sebk\SmallOrmBundle\Database;
 
 /**
@@ -28,7 +29,7 @@ class Connection
     {
         $this->database = $database;
 
-        switch($dbType) {
+        switch ($dbType) {
             case "mysql":
                 $connectionString = "mysql:dbname=$database;host=$host";
                 break;
@@ -39,7 +40,7 @@ class Connection
 
         try {
             $this->pdo = new \PDO($connectionString, $user, $password);
-        } catch(\PDOException $e) {
+        } catch (\PDOException $e) {
             throw new ConnectionException($e->getMessage());
         }
     }
@@ -60,14 +61,15 @@ class Connection
      * @return array
      * @throws ConnectionException
      */
-    public function execute($sql, $params = array()) {
+    public function execute($sql, $params = array())
+    {
         $statement = $this->pdo->prepare($sql);
 
-        foreach($params as $param => $value) {
+        foreach ($params as $param => $value) {
             $statement->bindValue(":".$param, $value);
         }
-        
-        if($statement->execute()) {
+
+        if ($statement->execute()) {
             return $statement->fetchAll(\PDO::FETCH_ASSOC);
         } else {
             $errInfo = $statement->errorInfo();
@@ -79,7 +81,8 @@ class Connection
      * Get last insert id
      * @return int
      */
-    public function lastInsertId() {
+    public function lastInsertId()
+    {
         return $this->pdo->lastInsertId();
     }
 }

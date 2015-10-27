@@ -23,23 +23,29 @@ class OrderByField
      * @param FromBuilder $model
      * @param string $fieldNameInModel
      */
-    public function __construct(FromBuilder $model, $fieldNameInModel, $sens = "ASC")
+    public function __construct(FromBuilder $model, $fieldNameInModel,
+                                $sens = "ASC")
     {
-        switch($sens) {
+        switch ($sens) {
             case "ASC":
             case "DESC":
                 break;
-            
+
             default:
                 throw new QueryBuilderException("Sens of order by can't be '$sens'");
         }
-        
-        $this->model = $model;
+
+        $this->model            = $model;
         $this->fieldNameInModel = $fieldNameInModel;
-        $this->sens = $sens;
+        $this->sens             = $sens;
     }
 
-    public function getSql() {
+    /**
+     *
+     * @return string
+     */
+    public function getSql()
+    {
         return $this->model->getFieldAliasIdentifiedByStringForSql($this->fieldNameInModel)." ".$this->sens." ";
     }
 }

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is a part of SebkSmallOrmBundle
  * Copyright 2015 - Sébastien Kus
@@ -13,8 +12,8 @@ use \Sebk\SmallOrmBundle\Dao\Model;
 /**
  *
  */
-class Validator {
-
+class Validator
+{
     protected $daoFactory;
     protected $config;
 
@@ -23,9 +22,10 @@ class Validator {
      * @param \Sebk\SmallOrmBundle\Factory\Connections $connectionFactory
      * @param type $config
      */
-    public function __construct($daoFactory, $config) {
+    public function __construct($daoFactory, $config)
+    {
         $this->daoFactory = $daoFactory;
-        $this->config = $config;
+        $this->config     = $config;
     }
 
     /**
@@ -36,13 +36,14 @@ class Validator {
      * @throws ConfigurationException
      * @throws DaoNotFoundException
      */
-    public function get(Model $model) {
+    public function get(Model $model)
+    {
         if (!isset($this->config[$model->getBundle()])) {
             throw new ConfigurationException("Bundle '$bundle' is not configured");
         }
 
         foreach ($this->config[$bundle]["connections"] as $connectionName => $connectionsParams) {
-            $className = $connectionsParams["validator_namespace"] . '\\' . $model->getModelName();
+            $className = $connectionsParams["validator_namespace"].'\\'.$model->getModelName();
             if (class_exists($className)) {
                 return new $className($this->daoFactory, $model);
             }
@@ -50,5 +51,4 @@ class Validator {
 
         throw new DaoNotFoundException("Validator of model $model of bundle $bundle not found");
     }
-
 }

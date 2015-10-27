@@ -65,7 +65,7 @@ class Connections
     public function getNamesAsArray()
     {
         $array = array();
-        foreach($this->config as $connectionName => $connectionParams) {
+        foreach ($this->config as $connectionName => $connectionParams) {
             $array[] = $connectionName;
         }
 

@@ -4,8 +4,10 @@
  * Copyright 2015 - Sébastien Kus
  * Under GNU GPL V3 licence
  */
+
 namespace Sebk\SmallOrmBundle\QueryBuilder;
 
 class JoinBuilderException extends \Exception
 {
+
 }

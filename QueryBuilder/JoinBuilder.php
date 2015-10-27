@@ -16,7 +16,7 @@ class JoinBuilder extends FromBuilder
     protected $relation;
     protected $bracket;
     protected $parent;
-    
+
     /**
      * @param \Sebk\SmallOrmBundle\QueryBuilder\QueryBuilder $parent
      * @return \Sebk\SmallOrmBundle\QueryBuilder\JoinBuilder
@@ -24,10 +24,10 @@ class JoinBuilder extends FromBuilder
     public function setParent(QueryBuilder $parent)
     {
         $this->parent = $parent;
-        
+
         return $this;
     }
-    
+
     /**
      * Set from and build primary conditions of relation
      * @param \Sebk\SmallOrmBundle\QueryBuilder\FromBuilder $from
@@ -43,7 +43,7 @@ class JoinBuilder extends FromBuilder
 
         $this->from     = $from;
         $this->relation = $this->from->getDao()->getRelation($relationAlias);
-        $this->dao = $this->relation->getDao();
+        $this->dao      = $this->relation->getDao();
 
         return $this;
     }
@@ -63,10 +63,10 @@ class JoinBuilder extends FromBuilder
      */
     public function buildBaseConditions()
     {
-        if($this->bracket !== null) {
+        if ($this->bracket !== null) {
             throw new JoinBuilderException("Base condition already defined");
         }
-        
+
         $this->bracket = new Bracket($this);
         $first         = true;
         foreach ($this->relation->getKeys() as $fromField => $toField) {
@@ -117,7 +117,8 @@ class JoinBuilder extends FromBuilder
      * Get sql code for join
      * @return string
      */
-    public function getSql($type = "JOIN") {
+    public function getSql($type = "JOIN")
+    {
         $sql = " ".$type." ";
 
         $sql .= parent::getSql();
@@ -129,7 +130,8 @@ class JoinBuilder extends FromBuilder
         return $sql;
     }
 
-    public function getFromAlias() {
+    public function getFromAlias()
+    {
         return $this->from->getAlias();
     }
 }

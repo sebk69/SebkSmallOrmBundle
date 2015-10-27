@@ -12,6 +12,7 @@ namespace Sebk\SmallOrmBundle\QueryBuilder;
  */
 class FullOuterJoinBuilder extends JoinBuilder
 {
+
     /**
      *
      * @param null $type
@@ -21,7 +22,7 @@ class FullOuterJoinBuilder extends JoinBuilder
     public function getSql($type = null)
     {
         throw new QueryBuilderException("Full outer join is not now implemented");
-        
+
         return parent::getSql("FULL OUTER JOIN");
     }
 }

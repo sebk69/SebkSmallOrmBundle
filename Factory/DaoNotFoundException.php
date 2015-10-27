@@ -4,6 +4,7 @@
  * Copyright 2015 - Sébastien Kus
  * Under GNU GPL V3 licence
  */
+
 namespace Sebk\SmallOrmBundle\Factory;
 
 class DaoNotFoundException extends \Exception

@@ -160,7 +160,7 @@ class Bracket
     public function getSql()
     {
         $sql = "";
-        
+
         if ($this->parent instanceof Bracket) {
             $sql .= "(";
         }
@@ -171,7 +171,7 @@ class Bracket
                 $sql .= " ".$this->operators[$i]." ";
             }
         }
-        
+
         if ($this->parent instanceof Bracket) {
             $sql .= ")";
         }

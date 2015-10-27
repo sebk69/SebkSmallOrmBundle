@@ -27,8 +27,10 @@ class SebkSmallOrmExtension extends Extension
             new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
 
-        $container->setParameter('sebk_small_orm.default_connection', $config['default_connection']);
-        $container->setParameter('sebk_small_orm.connexions', $config['connections']);
+        $container->setParameter('sebk_small_orm.default_connection',
+            $config['default_connection']);
+        $container->setParameter('sebk_small_orm.connexions',
+            $config['connections']);
         $container->setParameter('sebk_small_orm.bundles', $config['bundles']);
     }
 }

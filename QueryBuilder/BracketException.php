@@ -8,4 +8,5 @@ namespace Sebk\SmallOrmBundle\QueryBuilder;
 
 class BracketException extends \Exception
 {
+
 }
