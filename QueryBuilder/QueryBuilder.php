@@ -22,6 +22,7 @@ class QueryBuilder {
     protected $parameters = array();
     protected $offset = null;
     protected $limit = null;
+    protected $orderBy = array();
 
     /**
      * Construct QueryBuilder
@@ -197,6 +198,15 @@ class QueryBuilder {
             $sql .= $this->where->getSql();
         }
         
+        if(count($this->orderBy)) {
+            $sql .= " ORDER BY ";
+            $orderBy = array();
+            foreach($this->orderBy as $orderByField) {
+                $orderBy[] = $orderByField->getSql();
+            }
+            $sql .= implode(", ", $orderBy);
+        }
+        
         if($this->offset !== null) {
             $sql .= " LIMIT ".$this->offset.", ".$this->limit;
         }
@@ -248,8 +258,8 @@ class QueryBuilder {
      * @return \Sebk\SmallOrmBundle\QueryBuilder\ConditionField
      * @throws QueryBuilderException
      */
-    public function getFieldForCondition($fieldName, $modelAlias) {
-        if ($this->from->getAlias() == $modelAlias) {
+    public function getFieldForCondition($fieldName, $modelAlias = null) {
+        if ($this->from->getAlias() == $modelAlias || $modelAlias === null) {
             if ($this->from->getDao()->hasField($fieldName)) {
                 return new ConditionField($this->from, $fieldName);
             }
@@ -259,6 +269,33 @@ class QueryBuilder {
             if ($joinAlias == $modelAlias) {
                 if ($join->getDao()->hasField($fieldName)) {
                     return new ConditionField($join, $fieldName);
+                }
+            }
+        }
+
+        throw new QueryBuilderException("Field '$fieldName' is not in model aliased '$modelAlias'");
+    }
+    
+    /**
+     * Get orderby field object
+     * @param string $fieldName
+     * @param string $modelAlias
+     * @return \Sebk\SmallOrmBundle\QueryBuilder\ConditionField
+     * @throws QueryBuilderException
+     */
+    public function addOrderBy($fieldName, $modelAlias = null, $sens = "ASC") {
+        if ($this->from->getAlias() == $modelAlias || $modelAlias === null) {
+            if ($this->from->getDao()->hasField($fieldName)) {
+                $this->orderBy[] = new OrderByField($this->from, $fieldName, $sens);
+                return $this;
+            }
+        }
+
+        foreach ($this->joins as $joinAlias => $join) {
+            if ($joinAlias == $modelAlias) {
+                if ($join->getDao()->hasField($fieldName)) {
+                    $this->orderBy[] = new OrderByField($join, $fieldName, $sens);
+                    return $this;
                 }
             }
         }
