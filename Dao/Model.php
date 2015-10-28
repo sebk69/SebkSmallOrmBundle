@@ -198,6 +198,8 @@ class Model implements \JsonSerializable
                             $result[$key][] = null;
                         }
                     }
+                } else {
+                    $result[$key] = array();
                 }
             }
 

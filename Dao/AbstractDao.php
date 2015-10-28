@@ -252,17 +252,21 @@ abstract class AbstractDao {
         $savedIds = array();
         foreach ($records as $record) {
             $ids = $this->extractPrimaryKeysOfRecord($query, $alias, $record);
+            
+            if($ids !== null) {
+                foreach ($ids as $idName => $idValue) {
+                    if (count($group) && count($savedIds) && $savedIds[$idName] != $idValue) {
+                        $result[] = $this->populate($query, $alias, $group);
+                        $group = array();
+                    }
 
-            foreach ($ids as $idName => $idValue) {
-                if (count($group) && count($savedIds) && $savedIds[$idName] != $idValue) {
-                    $result[] = $this->populate($query, $alias, $group);
-                    $group = array();
+                    $group[] = $record;
                 }
-                
-                $group[] = $record;
-            }
 
-            $savedIds = $ids;
+                $savedIds = $ids;
+            } else {
+                $savedIds = array();
+            }
         }
         if (count($group)) {
             $result[] = $this->populate($query, $alias, $group);
@@ -291,7 +295,11 @@ abstract class AbstractDao {
             if ($join->getDaoRelation() instanceof ToOneRelation) {
                 $method = "set" . $join->getDaoRelation()->getAlias();
                 $toOneObjects = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias());
-                $model->$method($toOneObjects[0]);
+                if(count($toOneObjects)) {
+                    $model->$method($toOneObjects[0]);
+                } else {
+                    $model->$method(null);
+                }
             }
 
             if ($join->getDaoRelation() instanceof ToManyRelation) {
@@ -319,14 +327,22 @@ abstract class AbstractDao {
         $queryRelation = $query->getRelation($alias);
 
         $result = array();
+        $empty = true;
         foreach ($this->getPrimaryKeys() as $field) {
             if (array_key_exists($queryRelation->getFieldAliasForSql($field), $record)) {
+                if($record[$queryRelation->getFieldAliasForSql($field)] != null) {
+                    $empty = false;
+                }
                 $result[$field->getModelName()] = $record[$queryRelation->getFieldAliasForSql($field)];
             } else {
                 throw new DaoException("Record not match query");
             }
         }
 
+        if($empty) {
+            return null;
+        }
+        
         return $result;
     }
 
@@ -526,7 +542,7 @@ abstract class AbstractDao {
         }
         $parms = array();
 
-        $sql = "DELETE " . $this->connection->getDatabase() . "." . $this->dbTableName . " ";
+        $sql = "DELETE FROM " . $this->connection->getDatabase() . "." . $this->dbTableName . " ";
 
         if ($model->getOriginalPrimaryKeys() === null) {
             $model->setOriginalPrimaryKeys();
@@ -539,7 +555,7 @@ abstract class AbstractDao {
             $parms[$originalPk . "OriginalPk"] = $originalValue;
         }
         $sql .= implode(" AND ", $conds);
-
+                
         $this->connection->execute($sql, $parms);
 
         $model->fromDb = true;
