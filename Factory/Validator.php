@@ -39,16 +39,16 @@ class Validator
     public function get(Model $model)
     {
         if (!isset($this->config[$model->getBundle()])) {
-            throw new ConfigurationException("Bundle '$bundle' is not configured");
+            throw new ConfigurationException("Bundle '".$model->getBundle()."' is not configured");
         }
 
-        foreach ($this->config[$bundle]["connections"] as $connectionName => $connectionsParams) {
+        foreach ($this->config[$model->getBundle()]["connections"] as $connectionName => $connectionsParams) {
             $className = $connectionsParams["validator_namespace"].'\\'.$model->getModelName();
             if (class_exists($className)) {
                 return new $className($this->daoFactory, $model);
             }
         }
 
-        throw new DaoNotFoundException("Validator of model $model of bundle $bundle not found");
+        throw new DaoNotFoundException("Validator of model ".$model->getModelName()." of bundle ".$model->getBundle()." not found");
     }
 }

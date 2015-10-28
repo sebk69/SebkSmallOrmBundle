@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is a part of SebkSmallOrmBundle
  * Copyright 2015 - Sébastien Kus
@@ -14,8 +15,8 @@ use Sebk\SmallOrmBundle\QueryBuilder\QueryBuilder;
 /**
  * Abstract class to provide base dao features
  */
-abstract class AbstractDao
-{
+abstract class AbstractDao {
+
     protected $connection;
     protected $daoFactory;
     protected $modelNamespace;
@@ -24,17 +25,15 @@ abstract class AbstractDao
     private $dbTableName;
     private $primaryKeys;
     private $fields;
-    private $toOne  = array();
+    private $toOne = array();
     private $toMany = array();
 
-    public function __construct(Connection $connection, Dao $daoFactory,
-                                $modelNamespace, $modelName, $modelBundle)
-    {
-        $this->connection     = $connection;
-        $this->daoFactory     = $daoFactory;
+    public function __construct(Connection $connection, Dao $daoFactory, $modelNamespace, $modelName, $modelBundle) {
+        $this->connection = $connection;
+        $this->daoFactory = $daoFactory;
         $this->modelNamespace = $modelNamespace;
-        $this->modelName      = $modelName;
-        $this->modelBundle    = $modelBundle;
+        $this->modelName = $modelName;
+        $this->modelBundle = $modelBundle;
 
         $this->build();
     }
@@ -42,8 +41,7 @@ abstract class AbstractDao
     /**
      * @return string
      */
-    public function getModelName()
-    {
+    public function getModelName() {
         return $this->modelName;
     }
 
@@ -51,8 +49,7 @@ abstract class AbstractDao
      * @param string $name
      * @return \Sebk\SmallOrmBundle\Database\AbstractDao
      */
-    protected function setModelName($name)
-    {
+    protected function setModelName($name) {
         $this->modelName = $name;
 
         return $this;
@@ -61,8 +58,7 @@ abstract class AbstractDao
     /**
      * @return string
      */
-    public function getDbTableName()
-    {
+    public function getDbTableName() {
         return $this->dbTableName;
     }
 
@@ -70,8 +66,7 @@ abstract class AbstractDao
      * @param string $name
      * @return \Sebk\SmallOrmBundle\Database\AbstractDao
      */
-    protected function setDbTableName($name)
-    {
+    protected function setDbTableName($name) {
         $this->dbTableName = $name;
 
         return $this;
@@ -81,8 +76,7 @@ abstract class AbstractDao
      * @param string $dbFieldName
      * @param string $modelFieldName
      */
-    protected function addPrimaryKey($dbFieldName, $modelFieldName)
-    {
+    protected function addPrimaryKey($dbFieldName, $modelFieldName) {
         $this->primaryKeys[] = new Field($dbFieldName, $modelFieldName);
 
         return $this;
@@ -92,8 +86,7 @@ abstract class AbstractDao
      * @param string $dbFieldName
      * @param string $modelFieldName
      */
-    protected function addField($dbFieldName, $modelFieldName)
-    {
+    protected function addField($dbFieldName, $modelFieldName) {
         $this->fields[] = new Field($dbFieldName, $modelFieldName);
 
         return $this;
@@ -109,8 +102,7 @@ abstract class AbstractDao
      * Get primary keys definition
      * @return array
      */
-    public function getPrimaryKeys()
-    {
+    public function getPrimaryKeys() {
         return $this->primaryKeys;
     }
 
@@ -119,8 +111,7 @@ abstract class AbstractDao
      * @param boolean $withIds
      * @return array
      */
-    public function getFields($withIds = true)
-    {
+    public function getFields($withIds = true) {
         $result = array();
         if ($withIds == true) {
             $result = $this->primaryKeys;
@@ -135,9 +126,8 @@ abstract class AbstractDao
      * Create new model
      * @return \Sebk\SmallOrmBundle\Dao\modelClass
      */
-    public function newModel()
-    {
-        $modelClass = $this->modelNamespace."\\".$this->modelName;
+    public function newModel() {
+        $modelClass = $this->modelNamespace . "\\" . $this->modelName;
 
         $primaryKeys = array();
         foreach ($this->primaryKeys as $primaryKey) {
@@ -159,8 +149,7 @@ abstract class AbstractDao
             $toManys[] = lcFirst($toManyAlias);
         }
 
-        return new $modelClass($this->modelName, $this->modelBundle,
-            $primaryKeys, $fields, $toOnes, $toManys);
+        return new $modelClass($this->modelName, $this->modelBundle, $primaryKeys, $fields, $toOnes, $toManys);
     }
 
     /**
@@ -168,8 +157,7 @@ abstract class AbstractDao
      * @param type $alias
      * @return QueryBuilder
      */
-    public function createQueryBuilder($alias = null)
-    {
+    public function createQueryBuilder($alias = null) {
         return new QueryBuilder($this, $alias);
     }
 
@@ -178,10 +166,8 @@ abstract class AbstractDao
      * @param QueryBuilder $query
      * @return array
      */
-    public function getRawResult(QueryBuilder $query)
-    {
-        return $this->connection->execute($query->getSql(),
-                $query->getParameters());
+    public function getRawResult(QueryBuilder $query) {
+        return $this->connection->execute($query->getSql(), $query->getParameters());
     }
 
     /**
@@ -189,8 +175,7 @@ abstract class AbstractDao
      * @param string $fieldName
      * @return boolean
      */
-    public function hasField($fieldName)
-    {
+    public function hasField($fieldName) {
         foreach ($this->getFields() as $field) {
             if ($field->getModelName($field)) {
                 return true;
@@ -206,8 +191,7 @@ abstract class AbstractDao
      * @return Field
      * @throws DaoException
      */
-    public function getField($fieldName)
-    {
+    public function getField($fieldName) {
         foreach ($this->getFields() as $field) {
             if ($field->getModelName() == $fieldName) {
                 return $field;
@@ -223,8 +207,7 @@ abstract class AbstractDao
      * @return \Sebk\SmallOrmBundle\Dao\AbstractDao
      * @throws DaoException
      */
-    public function addRelation(Relation $relation)
-    {
+    public function addRelation(Relation $relation) {
         if ($relation instanceof ToOneRelation) {
             $this->toOne[$relation->getAlias()] = $relation;
 
@@ -245,8 +228,7 @@ abstract class AbstractDao
      * @param QueryBuilder $query
      * @return array
      */
-    public function getResult(QueryBuilder $query)
-    {
+    public function getResult(QueryBuilder $query) {
         $records = $this->getRawResult($query);
 
         return $this->buildResult($query, $records);
@@ -259,8 +241,7 @@ abstract class AbstractDao
      * @param string $alias
      * @return array
      */
-    protected function buildResult(QueryBuilder $query, $records, $alias = null)
-    {
+    protected function buildResult(QueryBuilder $query, $records, $alias = null) {
         if ($alias === null) {
             $alias = $query->getRelation()->getAlias();
         }
@@ -273,7 +254,7 @@ abstract class AbstractDao
             foreach ($ids as $idName => $idValue) {
                 if (count($group) && $savedIds[$idName] != $idValue) {
                     $result[] = $this->populate($query, $alias, $group);
-                    $group    = array();
+                    $group = array();
                 }
 
                 $group[] = $record;
@@ -295,28 +276,25 @@ abstract class AbstractDao
      * @param array $records
      * @return Model
      */
-    protected function populate(QueryBuilder $query, $alias, $records)
-    {
-        $model  = $this->newModel();
+    protected function populate(QueryBuilder $query, $alias, $records) {
+        $model = $this->newModel();
         $fields = $this->extractFieldsOfRecord($query, $alias, $records[0]);
 
         foreach ($fields as $property => $value) {
-            $method = "set".$property;
+            $method = "set" . $property;
             $model->$method($value);
         }
 
         foreach ($query->getChildRelationsForAlias($alias) as $join) {
             if ($join->getDaoRelation() instanceof ToOneRelation) {
-                $method       = "set".$join->getDaoRelation()->getAlias();
-                $toOneObjects = $join->getDaoRelation()->getDao()->buildResult($query,
-                    $records, $join->getAlias());
+                $method = "set" . $join->getDaoRelation()->getAlias();
+                $toOneObjects = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias());
                 $model->$method($toOneObjects[0]);
             }
 
             if ($join->getDaoRelation() instanceof ToManyRelation) {
-                $method      = "set".$join->getDaoRelation()->getAlias();
-                $toOneObject = $join->getDaoRelation()->getDao()->buildResult($query,
-                    $records, $join->getAlias());
+                $method = "set" . $join->getDaoRelation()->getAlias();
+                $toOneObject = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias());
                 $model->$method($toOneObject);
             }
         }
@@ -335,15 +313,12 @@ abstract class AbstractDao
      * @return array
      * @throws DaoException
      */
-    private function extractPrimaryKeysOfRecord(QueryBuilder $query, $alias,
-                                                $record)
-    {
+    private function extractPrimaryKeysOfRecord(QueryBuilder $query, $alias, $record) {
         $queryRelation = $query->getRelation($alias);
 
         $result = array();
         foreach ($this->getPrimaryKeys() as $field) {
-            if (array_key_exists($queryRelation->getFieldAliasForSql($field),
-                    $record)) {
+            if (array_key_exists($queryRelation->getFieldAliasForSql($field), $record)) {
                 $result[$field->getModelName()] = $record[$queryRelation->getFieldAliasForSql($field)];
             } else {
                 throw new DaoException("Record not match query");
@@ -361,14 +336,12 @@ abstract class AbstractDao
      * @return array
      * @throws DaoException
      */
-    private function extractFieldsOfRecord(QueryBuilder $query, $alias, $record)
-    {
+    private function extractFieldsOfRecord(QueryBuilder $query, $alias, $record) {
         $queryRelation = $query->getRelation($alias);
 
         $result = array();
         foreach ($this->getFields() as $field) {
-            if (array_key_exists($queryRelation->getFieldAliasForSql($field),
-                    $record)) {
+            if (array_key_exists($queryRelation->getFieldAliasForSql($field), $record)) {
                 $result[$field->getModelName()] = $record[$queryRelation->getFieldAliasForSql($field)];
             } else {
                 throw new DaoException("Record not match query");
@@ -386,8 +359,7 @@ abstract class AbstractDao
      * @return \Sebk\SmallOrmBundle\Dao\AbstractDao
      * @throws DaoException
      */
-    public function addToOne($alias, $keys, $toModel, $toBundle = null)
-    {
+    public function addToOne($alias, $keys, $toModel, $toBundle = null) {
         if ($toBundle === null) {
             $toBundle = $this->modelBundle;
         }
@@ -400,8 +372,7 @@ abstract class AbstractDao
             }
         }
 
-        $this->toOne[$alias] = new ToOneRelation($toBundle, $toModel, $keys,
-            $this->daoFactory, $alias);
+        $this->toOne[$alias] = new ToOneRelation($toBundle, $toModel, $keys, $this->daoFactory, $alias);
 
         return $this;
     }
@@ -414,8 +385,7 @@ abstract class AbstractDao
      * @return \Sebk\SmallOrmBundle\Dao\AbstractDao
      * @throws DaoException
      */
-    public function addToMany($alias, $keys, $toModel, $toBundle = null)
-    {
+    public function addToMany($alias, $keys, $toModel, $toBundle = null) {
         if ($toBundle === null) {
             $toBundle = $this->modelBundle;
         }
@@ -428,8 +398,7 @@ abstract class AbstractDao
             }
         }
 
-        $this->toMany[$alias] = new ToManyRelation($toBundle, $toModel, $keys,
-            $this->daoFactory, $alias);
+        $this->toMany[$alias] = new ToManyRelation($toBundle, $toModel, $keys, $this->daoFactory, $alias);
 
         return $this;
     }
@@ -440,8 +409,7 @@ abstract class AbstractDao
      * @return Relation
      * @throws DaoException
      */
-    public function getRelation($alias)
-    {
+    public function getRelation($alias) {
         if (array_key_exists($alias, $this->toOne)) {
             return $this->toOne[$alias];
         }
@@ -458,13 +426,16 @@ abstract class AbstractDao
      * @param \Sebk\SmallOrmBundle\Dao\Model $model
      * @return \Sebk\SmallOrmBundle\Dao\AbstractDao
      */
-    public function insert(Model $model)
-    {
-        $sql    = "INSERT INTO ".$this->connection->getDatabase().".".$this->dbTableName." VALUES(";
+    public function insert(Model $model) {
+        $sql = "INSERT INTO " . $this->connection->getDatabase() . "." . $this->dbTableName . " ";
         $fields = $model->asArray(false, true);
+        $columns = array();
         foreach ($fields as $key => $val) {
             $queryFields[$key] = ":$key";
+            $columns[] = $this->getField($key)->getDbName();
         }
+        $sql .= "(".  implode(", ", $columns).")";
+        $sql .= " VALUES(";
         $sql .= implode(", ", $queryFields);
         $sql .= ");";
 
@@ -473,13 +444,13 @@ abstract class AbstractDao
         if ($this->connection->lastInsertId() !== null) {
             foreach ($model->getPrimaryKeys() as $key => $value) {
                 if ($value === null) {
-                    $method = "set".$key;
+                    $method = "set" . $key;
                     $model->$method($this->connection->lastInsertId());
                 }
             }
         }
 
-        $model->fromDb  = true;
+        $model->fromDb = true;
         $model->altered = false;
 
         return $this;
@@ -491,8 +462,7 @@ abstract class AbstractDao
      * @return string
      * @throws DaoException
      */
-    public function getDbNameFromModelName($modelName)
-    {
+    public function getDbNameFromModelName($modelName) {
         foreach ($this->getFields() as $field) {
             if ($modelName == $field->getModelName()) {
                 return $field->getDbName();
@@ -508,18 +478,17 @@ abstract class AbstractDao
      * @return \Sebk\SmallOrmBundle\Dao\AbstractDao
      * @throws DaoException
      */
-    public function update(Model $model)
-    {
+    public function update(Model $model) {
         if (!$model->fromDb) {
             throw new DaoException("Try update a record not from db from '$this->modelBundle' '$this->modelName' model");
         }
         $parms = array();
 
-        $sql    = "UPDATE ".$this->connection->getDatabase().".".$this->dbTableName." set ";
+        $sql = "UPDATE " . $this->connection->getDatabase() . "." . $this->dbTableName . " set ";
         $fields = $model->asArray(false, true);
         foreach ($fields as $key => $val) {
-            $queryFields[$key] = $this->getDbNameFromModelName($key)." = :$key";
-            $parms[$key]       = $val;
+            $queryFields[$key] = $this->getDbNameFromModelName($key) . " = :$key";
+            $parms[$key] = $val;
         }
         $sql .= implode(", ", $queryFields);
 
@@ -530,14 +499,14 @@ abstract class AbstractDao
         $sql .= " WHERE ";
         $conds = array();
         foreach ($model->getOriginalPrimaryKeys() as $originalPk => $originalValue) {
-            $conds[]                         = $this->getDbNameFromModelName($originalPk)." = :".$originalPk."OriginalPk";
-            $parms[$originalPk."OriginalPk"] = $originalValue;
+            $conds[] = $this->getDbNameFromModelName($originalPk) . " = :" . $originalPk . "OriginalPk";
+            $parms[$originalPk . "OriginalPk"] = $originalValue;
         }
         $sql .= implode(" AND ", $conds);
 
         $this->connection->execute($sql, $parms);
 
-        $model->fromDb  = true;
+        $model->fromDb = true;
         $model->altered = false;
 
         return $this;
@@ -549,14 +518,13 @@ abstract class AbstractDao
      * @return \Sebk\SmallOrmBundle\Dao\AbstractDao
      * @throws DaoException
      */
-    public function delete(Model $model)
-    {
+    public function delete(Model $model) {
         if (!$model->fromDb) {
             throw new DaoException("Try delete a record not from db from '$this->modelBundle' '$this->modelName' model");
         }
         $parms = array();
 
-        $sql = "DELETE ".$this->connection->getDatabase().".".$this->dbTableName." ";
+        $sql = "DELETE " . $this->connection->getDatabase() . "." . $this->dbTableName . " ";
 
         if ($model->getOriginalPrimaryKeys() === null) {
             $model->setOriginalPrimaryKeys();
@@ -565,14 +533,14 @@ abstract class AbstractDao
         $sql .= " WHERE ";
         $conds = array();
         foreach ($model->getOriginalPrimaryKeys() as $originalPk => $originalValue) {
-            $conds[]                         = $this->getDbNameFromModelName($originalPk)." = :".$originalPk."OriginalPk";
-            $parms[$originalPk."OriginalPk"] = $originalValue;
+            $conds[] = $this->getDbNameFromModelName($originalPk) . " = :" . $originalPk . "OriginalPk";
+            $parms[$originalPk . "OriginalPk"] = $originalValue;
         }
         $sql .= implode(" AND ", $conds);
 
         $this->connection->execute($sql, $parms);
 
-        $model->fromDb  = true;
+        $model->fromDb = true;
         $model->altered = false;
 
         return $this;
@@ -582,8 +550,7 @@ abstract class AbstractDao
      * Persist a record
      * @param \Sebk\SmallOrmBundle\Dao\Model $model
      */
-    public function persist(Model $model)
-    {
+    public function persist(Model $model) {
         if ($model->fromDb) {
             $this->update($model);
         } else {
@@ -597,18 +564,29 @@ abstract class AbstractDao
      * @param boolean $setOriginalKeys
      * @return \Sebk\SmallOrmBundle\Dao\Model
      */
-    public function makeModelFromStdClass($stdClass, $setOriginalKeys = false)
-    {
+    public function makeModelFromStdClass($stdClass, $setOriginalKeys = false) {
         $model = $this->newModel();
 
         foreach ($stdClass as $prop => $value) {
-            $method = "set".$prop;
-            $model->$method($value);
+            try {
+                $method = "set" . $prop;
+                $model->$method($value);
+            } catch (ModelException $e) {
+                
+            }
         }
 
         if ($setOriginalKeys) {
             $model->setOriginalPrimaryKeys();
         }
+
+        if (isset($stdClass->fromDb)) {
+            $model->fromDb = $stdClass->fromDb;
+        } else {
+            $model->fromDb = false;
+        }
+
+        $model->altered = true;
 
         return $model;
     }
@@ -618,20 +596,17 @@ abstract class AbstractDao
      * @param array $conds
      * @return array
      */
-    public function findBy($conds)
-    {
+    public function findBy($conds) {
         $query = $this->createQueryBuilder(lcfirst($this->modelName));
         $where = $query->where();
 
         $first = true;
         foreach ($conds as $field => $value) {
             if ($first) {
-                $where->firstCondition($query->getFieldForCondition($field),
-                    "=", ":".$field);
+                $where->firstCondition($query->getFieldForCondition($field), "=", ":" . $field);
                 $query->setParameter($field, $value);
             } else {
-                $where->andCondition($query->getFieldForCondition($field), "=",
-                    ":".$field);
+                $where->andCondition($query->getFieldForCondition($field), "=", ":" . $field);
                 $query->setParameter($field, $value);
             }
 
@@ -647,8 +622,7 @@ abstract class AbstractDao
      * @return Model
      * @throws DaoException
      */
-    public function findOneBy($conds)
-    {
+    public function findOneBy($conds) {
         $results = $this->findBy($conds);
 
         if (count($results) == 0) {
@@ -661,4 +635,5 @@ abstract class AbstractDao
 
         return $results[0];
     }
+
 }
