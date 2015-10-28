@@ -249,14 +249,16 @@ abstract class AbstractDao {
         $result = array();
 
         $group = array();
+        $savedIds = array();
         foreach ($records as $record) {
             $ids = $this->extractPrimaryKeysOfRecord($query, $alias, $record);
+
             foreach ($ids as $idName => $idValue) {
-                if (count($group) && $savedIds[$idName] != $idValue) {
+                if (count($group) && count($savedIds) && $savedIds[$idName] != $idValue) {
                     $result[] = $this->populate($query, $alias, $group);
                     $group = array();
                 }
-
+                
                 $group[] = $record;
             }
 
@@ -434,7 +436,7 @@ abstract class AbstractDao {
             $queryFields[$key] = ":$key";
             $columns[] = $this->getField($key)->getDbName();
         }
-        $sql .= "(".  implode(", ", $columns).")";
+        $sql .= "(" . implode(", ", $columns) . ")";
         $sql .= " VALUES(";
         $sql .= implode(", ", $queryFields);
         $sql .= ");";

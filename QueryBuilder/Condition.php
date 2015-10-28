@@ -105,10 +105,10 @@ class Condition
                         array(static::TYPE_FIELD, static::TYPE_VALUE, static::TYPE_SUBQUERY,
                         static::TYPE_CONSTANT))) {
                     throw new ConditionException("Variable of type '".$this->type1."' is not possible as left operator for operator '$operator'");
-                }
+                }/*
                 if ($this->type2 == static::TYPE_NULL) {
                     throw new ConditionException("Variable of type '".$this->type2."' is not possible as right operator for operator '$operator'");
-                }
+                }*/
                 break;
 
             case "exists":
