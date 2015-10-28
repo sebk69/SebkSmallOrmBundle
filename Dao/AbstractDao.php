@@ -252,8 +252,8 @@ abstract class AbstractDao {
         $savedIds = array();
         foreach ($records as $record) {
             $ids = $this->extractPrimaryKeysOfRecord($query, $alias, $record);
-            
-            if($ids !== null) {
+
+            if ($ids !== null) {
                 foreach ($ids as $idName => $idValue) {
                     if (count($group) && count($savedIds) && $savedIds[$idName] != $idValue) {
                         $result[] = $this->populate($query, $alias, $group);
@@ -295,7 +295,7 @@ abstract class AbstractDao {
             if ($join->getDaoRelation() instanceof ToOneRelation) {
                 $method = "set" . $join->getDaoRelation()->getAlias();
                 $toOneObjects = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias());
-                if(count($toOneObjects)) {
+                if (count($toOneObjects)) {
                     $model->$method($toOneObjects[0]);
                 } else {
                     $model->$method(null);
@@ -330,7 +330,7 @@ abstract class AbstractDao {
         $empty = true;
         foreach ($this->getPrimaryKeys() as $field) {
             if (array_key_exists($queryRelation->getFieldAliasForSql($field), $record)) {
-                if($record[$queryRelation->getFieldAliasForSql($field)] != null) {
+                if ($record[$queryRelation->getFieldAliasForSql($field)] != null) {
                     $empty = false;
                 }
                 $result[$field->getModelName()] = $record[$queryRelation->getFieldAliasForSql($field)];
@@ -339,10 +339,10 @@ abstract class AbstractDao {
             }
         }
 
-        if($empty) {
+        if ($empty) {
             return null;
         }
-        
+
         return $result;
     }
 
@@ -555,7 +555,7 @@ abstract class AbstractDao {
             $parms[$originalPk . "OriginalPk"] = $originalValue;
         }
         $sql .= implode(" AND ", $conds);
-                
+
         $this->connection->execute($sql, $parms);
 
         $model->fromDb = true;
@@ -586,11 +586,20 @@ abstract class AbstractDao {
         $model = $this->newModel();
 
         foreach ($stdClass as $prop => $value) {
-            try {
-                $method = "set" . $prop;
-                $model->$method($value);
-            } catch (ModelException $e) {
-                
+            $method = "set" . $prop;
+            if (!is_object($value)) {
+                try {
+                    $model->$method($value);
+                } catch (ModelException $e) {
+                    
+                }
+            } else {
+                try {
+                    $relation = $this->getRelation($prop);
+                    $model->$method($relation->getDao()->makeModelFromStdClass($value));
+                } catch (DaoException $e) {
+                    
+                }
             }
         }
 
