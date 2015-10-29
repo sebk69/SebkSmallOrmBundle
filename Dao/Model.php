@@ -19,6 +19,7 @@ class Model implements \JsonSerializable
     private $fields              = array();
     private $toOnes              = array();
     private $toManys             = array();
+    private $metadata            = array();
     public $fromDb               = false;
     public $altered              = false;
 
@@ -90,6 +91,8 @@ class Model implements \JsonSerializable
                     return $this->toOnes[$name];
                 } elseif ($typeField == "toMany") {
                     return $this->toManys[$name];
+                } elseif($typeField == "metadata" && array_key_exists($name, $this->metadata)) {
+                    $this->metadata[$name] = $args[0];
                 }
                 break;
             case "set":
@@ -101,6 +104,8 @@ class Model implements \JsonSerializable
                     $this->toOnes[$name] = $args[0];
                 } elseif ($typeField == "toMany") {
                     $this->toManys[$name] = $args[0];
+                } elseif($typeField == "metadata") {
+                    $this->metadata[$name] = $args[0];
                 }
                 return $this;
                 break;
@@ -142,8 +147,8 @@ class Model implements \JsonSerializable
         if (array_key_exists($field, $this->toManys)) {
             return "toMany";
         }
-
-        throw new ModelException("Field '$field' doesn't exists in model '$this->modelName'");
+        
+        return "metadata";
     }
 
     /**
@@ -201,6 +206,10 @@ class Model implements \JsonSerializable
                 } else {
                     $result[$key] = array();
                 }
+            }
+            
+            foreach($this->metadata as $key => $value) {
+                $result[$key] = $value;
             }
 
             if (!$onlyFields) {
