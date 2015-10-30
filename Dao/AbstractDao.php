@@ -23,10 +23,11 @@ abstract class AbstractDao {
     private $modelName;
     private $modelBundle;
     private $dbTableName;
-    private $primaryKeys;
-    private $fields;
+    private $primaryKeys = array();
+    private $fields = array();
     private $toOne = array();
     private $toMany = array();
+    private $defaultValues = array();
 
     public function __construct(Connection $connection, Dao $daoFactory, $modelNamespace, $modelName, $modelBundle) {
         $this->connection = $connection;
@@ -76,8 +77,9 @@ abstract class AbstractDao {
      * @param string $dbFieldName
      * @param string $modelFieldName
      */
-    protected function addPrimaryKey($dbFieldName, $modelFieldName) {
+    protected function addPrimaryKey($dbFieldName, $modelFieldName, $defaultValue = null) {
         $this->primaryKeys[] = new Field($dbFieldName, $modelFieldName);
+        $this->defaultValues[$modelFieldName] = $defaultValue;
 
         return $this;
     }
@@ -86,8 +88,9 @@ abstract class AbstractDao {
      * @param string $dbFieldName
      * @param string $modelFieldName
      */
-    protected function addField($dbFieldName, $modelFieldName) {
+    protected function addField($dbFieldName, $modelFieldName, $defaultValue = null) {
         $this->fields[] = new Field($dbFieldName, $modelFieldName);
+        $this->defaultValues[$modelFieldName] = $defaultValue;
 
         return $this;
     }
@@ -149,7 +152,14 @@ abstract class AbstractDao {
             $toManys[] = lcFirst($toManyAlias);
         }
 
-        return new $modelClass($this->modelName, $this->modelBundle, $primaryKeys, $fields, $toOnes, $toManys);
+        $model = new $modelClass($this->modelName, $this->modelBundle, $primaryKeys, $fields, $toOnes, $toManys);
+        
+        foreach($this->defaultValues as $property => $defaultValue) {
+            $method = "set".$property;
+            $model->$method($defaultValue);
+        }
+        
+        return $model;
     }
 
     /**
@@ -446,7 +456,7 @@ abstract class AbstractDao {
      */
     public function insert(Model $model) {
         $sql = "INSERT INTO " . $this->connection->getDatabase() . "." . $this->dbTableName . " ";
-        $fields = $model->asArray(false, true);
+        $fields = $model->toArray(false, true);
         $columns = array();
         foreach ($fields as $key => $val) {
             $queryFields[$key] = ":$key";
@@ -503,7 +513,7 @@ abstract class AbstractDao {
         $parms = array();
 
         $sql = "UPDATE " . $this->connection->getDatabase() . "." . $this->dbTableName . " set ";
-        $fields = $model->asArray(false, true);
+        $fields = $model->toArray(false, true);
         foreach ($fields as $key => $val) {
             $queryFields[$key] = $this->getDbNameFromModelName($key) . " = :$key";
             $parms[$key] = $val;
@@ -596,7 +606,15 @@ abstract class AbstractDao {
             } else {
                 try {
                     $relation = $this->getRelation($prop);
-                    $model->$method($relation->getDao()->makeModelFromStdClass($value));
+                    if($relation instanceof ToOneRelation) {
+                        $model->$method($relation->getDao()->makeModelFromStdClass($value));
+                    } elseif ($relation instanceof ToManyRelation) {
+                        $objects = array();
+                        foreach($value as $key => $modelStdClass) {
+                            $objects[$key] = $relation->getDao()->makeModelFromStdClass($modelStdClass);
+                        }
+                        $model->$method($objects);
+                    }
                 } catch (DaoException $e) {
                     
                 }

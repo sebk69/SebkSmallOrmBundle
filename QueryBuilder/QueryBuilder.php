@@ -356,7 +356,7 @@ class QueryBuilder
     /**
      * Get raw result of query
      * @return array
-     */
+     *
     public function getRawResult()
     {
         return $this->from->getDao()->getRawResult($this);
@@ -366,4 +366,6 @@ class QueryBuilder
     {
         return $this->from->getDao()->populate($this, $this->getRawResult());
     }
+     *
+     */
 }

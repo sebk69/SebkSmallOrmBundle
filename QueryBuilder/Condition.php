@@ -56,7 +56,7 @@ class Condition
             throw new ConditionException("Object of type '".get_class($var)."' is not possible as condition variable");
         }
 
-        if ($var == null) {
+        if ($var === null) {
             return static::TYPE_NULL;
         }
 

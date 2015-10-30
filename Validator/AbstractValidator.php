@@ -80,7 +80,7 @@ abstract class AbstractValidator
      */
     public function testUnique($field)
     {
-        $dao      = $this->dao->get($this->model->getBundle(),
+        $dao      = $this->daoFactory->get($this->model->getBundle(),
             $this->model->getModelName());
         $creation = !$this->model->fromDb;
 

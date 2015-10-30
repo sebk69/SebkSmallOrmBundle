@@ -92,7 +92,7 @@ class Model implements \JsonSerializable
                 } elseif ($typeField == "toMany") {
                     return $this->toManys[$name];
                 } elseif($typeField == "metadata" && array_key_exists($name, $this->metadata)) {
-                    $this->metadata[$name] = $args[0];
+                    return $this->metadata[$name];
                 }
                 break;
             case "set":
@@ -165,7 +165,7 @@ class Model implements \JsonSerializable
      * @param boolean $dependecies
      * @return array
      */
-    public function asArray($dependecies = true, $onlyFields = false)
+    public function toArray($dependecies = true, $onlyFields = false)
     {
         $result = array();
 
@@ -197,8 +197,10 @@ class Model implements \JsonSerializable
                 if ($array != null) {
                     $result[$key] = array();
                     foreach ($array as $i => $model) {
-                        if ($model !== null) {
+                        if ($model !== null && $model instanceof Model) {
                             $result[$key][] = $model->jsonSerialize();
+                        } elseif($model !== null) {
+                            $result[$key][] = $model;
                         } else {
                             $result[$key][] = null;
                         }
@@ -226,6 +228,6 @@ class Model implements \JsonSerializable
      */
     public function jsonSerialize()
     {
-        return $this->asArray();
+        return $this->toArray();
     }
 }
