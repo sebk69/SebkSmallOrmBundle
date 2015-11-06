@@ -376,6 +376,14 @@ abstract class AbstractDao {
             }
         }
 
+        if($alias == $query->getGroupByAlias()) {
+            foreach($query->getGroupByOperations() as $operation) {
+                if (array_key_exists($operation->getAlias(), $record)) {
+                    $result[$operation->getAlias()] = $record[$operation->getAlias()];
+                }
+            }
+        }
+
         return $result;
     }
 
