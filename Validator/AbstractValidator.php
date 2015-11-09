@@ -113,4 +113,18 @@ abstract class AbstractValidator
 
         return count($result) == 0;
     }
+    
+    public function testInteger($field)
+    {
+        $method = "get".$field;
+        $value = $this->model->$method();
+        $numbers = str_split("0123456789");
+        for($i = 0; $i < strlen($value); $i++) {
+            if(!in_array(substr($value, $i, 1), $numbers)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
