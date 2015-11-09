@@ -457,6 +457,7 @@ abstract class AbstractDao {
     public function insert(Model $model) {
         $sql = "INSERT INTO " . $this->connection->getDatabase() . "." . $this->dbTableName . " ";
         $fields = $model->toArray(false, true);
+        
         $columns = array();
         foreach ($fields as $key => $val) {
             $queryFields[$key] = ":$key";
