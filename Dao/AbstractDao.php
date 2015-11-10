@@ -163,6 +163,23 @@ abstract class AbstractDao {
     }
 
     /**
+     * Create a new collection of models
+     * @param Model || array $array
+     * @return ModelCollection
+     */
+    public function newCollection($array = array())
+    {
+        $modelClass = $this->modelNamespace . "\\" . $this->modelName . "Collection";
+        if(class_exists($modelClass)) {
+            $collection = new $modelClass($array);
+        } else {
+            $collection = new ModelCollection($array);
+        }
+
+        return $collection;
+    }
+
+    /**
      * Create query builder object with base model from this dao
      * @param type $alias
      * @return QueryBuilder
@@ -256,7 +273,7 @@ abstract class AbstractDao {
             $alias = $query->getRelation()->getAlias();
         }
 
-        $result = array();
+        $result = $this->newCollection();
 
         $group = array();
         $savedIds = array();
