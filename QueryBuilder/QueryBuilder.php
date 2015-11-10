@@ -24,6 +24,7 @@ class QueryBuilder
     protected $orderBy           = array();
     protected $groupBy;
     protected $groupByOperations = array();
+    protected $rawSelect         = null;
 
     /**
      * Construct QueryBuilder
@@ -91,6 +92,26 @@ class QueryBuilder
         }
 
         return $joinsArray;
+    }
+
+    /**
+     * This method will replace object and return an array per record corresponding to sql
+     * @param type $sql
+     * @return \Sebk\SmallOrmBundle\QueryBuilder\QueryBuilder
+     */
+    public function rawSelect($sql)
+    {
+        $this->rawSelect = $sql;
+
+        return $this;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isRawSelect()
+    {
+        return $this->rawSelect !== null;
     }
 
     /**
@@ -294,7 +315,11 @@ class QueryBuilder
         }
 
         $sql = "SELECT ";
-        $sql .= $this->getFieldsForSqlAsString();
+        if($this->isRawSelect()) {
+            $sql .= $this->rawSelect;
+        } else {
+            $sql .= $this->getFieldsForSqlAsString();
+        }
         $sql .= " FROM ";
         $sql .= $this->getFromForSqlAsString();
 
@@ -311,11 +336,11 @@ class QueryBuilder
             $groupBy = array();
             if ($this->groupBy == $this->from->getAlias()) {
                 foreach ($this->from->getDao()->getPrimaryKeys() as $key) {
-                    $groupBy[] = $this->from->getFieldAliasForSql($key);
+                    $groupBy[] = $this->from->getAlias().".".$key->getDbName();
                 }
             } else {
                 foreach ($this->joins[$this->groupBy]->getDao()->getPrimaryKeys() as $key) {
-                    $groupBy[] = $this->joins[$this->groupBy]->getFieldAliasForSql($key);
+                    $groupBy[] = $this->joins[$this->groupBy]->getAlias().".".$key->getDbName();
                 }
             }
 

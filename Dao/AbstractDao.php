@@ -258,7 +258,11 @@ abstract class AbstractDao {
     public function getResult(QueryBuilder $query) {
         $records = $this->getRawResult($query);
 
-        return $this->buildResult($query, $records);
+        if(!$query->isRawSelect()) {
+            return $this->buildResult($query, $records);
+        }
+
+        return $records;
     }
 
     /**
