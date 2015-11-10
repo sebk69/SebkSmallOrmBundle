@@ -10,9 +10,9 @@ namespace Sebk\SmallOrmBundle\Dao;
 /**
  * Model base collection
  */
-class ModelCollection implements \ArrayAccess
+class ModelCollection implements \IteratorAggregate, \ArrayAccess, \JsonSerializable
 {
-    protected $objects;
+    protected $objects = array();
 
     /**
      * @param \Sebk\SmallOrmBundle\Dao\ModelCollection || array $array
@@ -95,5 +95,30 @@ class ModelCollection implements \ArrayAccess
         }
 
         throw new DaoException("Offset '$key' doesn't exists");
+    }
+    
+    public function jsonSerialize() {
+        $result = array();
+        
+        foreach($this->objects as $key => $value) {
+            $result[] = $value->jsonSerialize();
+        }
+        
+        return $result;
+    }
+    
+    public function toArray() {
+        $result = array();
+        
+        foreach($this->objects as $key => $value) {
+            $result[] = $value->toArray();
+        }
+        
+        return $result;
+    }
+    
+    function getIterator()
+    {
+        return new \ArrayIterator($this->objects);
     }
 }

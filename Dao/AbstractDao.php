@@ -255,11 +255,11 @@ abstract class AbstractDao {
      * @param QueryBuilder $query
      * @return array
      */
-    public function getResult(QueryBuilder $query) {
+    public function getResult(QueryBuilder $query, $asCollection = false) {
         $records = $this->getRawResult($query);
 
         if(!$query->isRawSelect()) {
-            return $this->buildResult($query, $records);
+            return $this->buildResult($query, $records, null, $asCollection);
         }
 
         return $records;
@@ -272,12 +272,16 @@ abstract class AbstractDao {
      * @param string $alias
      * @return array
      */
-    protected function buildResult(QueryBuilder $query, $records, $alias = null) {
+    protected function buildResult(QueryBuilder $query, $records, $alias = null, $asCollection) {
         if ($alias === null) {
             $alias = $query->getRelation()->getAlias();
         }
 
-        $result = $this->newCollection();
+        if($asCollection) {
+            $result = $this->newCollection();
+        } else {
+            $result = array();
+        }
 
         $group = array();
         $savedIds = array();
@@ -287,7 +291,7 @@ abstract class AbstractDao {
             if ($ids !== null) {
                 foreach ($ids as $idName => $idValue) {
                     if (count($group) && count($savedIds) && $savedIds[$idName] != $idValue) {
-                        $result[] = $this->populate($query, $alias, $group);
+                        $result[] = $this->populate($query, $alias, $group, $asCollection);
                         $group = array();
                     }
 
@@ -300,7 +304,7 @@ abstract class AbstractDao {
             }
         }
         if (count($group)) {
-            $result[] = $this->populate($query, $alias, $group);
+            $result[] = $this->populate($query, $alias, $group, $asCollection);
         }
 
         return $result;
@@ -313,7 +317,7 @@ abstract class AbstractDao {
      * @param array $records
      * @return Model
      */
-    protected function populate(QueryBuilder $query, $alias, $records) {
+    protected function populate(QueryBuilder $query, $alias, $records, $asCollection) {
         $model = $this->newModel();
         $fields = $this->extractFieldsOfRecord($query, $alias, $records[0]);
 
@@ -325,7 +329,7 @@ abstract class AbstractDao {
         foreach ($query->getChildRelationsForAlias($alias) as $join) {
             if ($join->getDaoRelation() instanceof ToOneRelation) {
                 $method = "set" . $join->getDaoRelation()->getAlias();
-                $toOneObjects = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias());
+                $toOneObjects = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias(), $asCollection);
                 if (count($toOneObjects)) {
                     $model->$method($toOneObjects[0]);
                 } else {
@@ -335,7 +339,7 @@ abstract class AbstractDao {
 
             if ($join->getDaoRelation() instanceof ToManyRelation) {
                 $method = "set" . $join->getDaoRelation()->getAlias();
-                $toOneObject = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias());
+                $toOneObject = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias(), $asCollection);
                 $model->$method($toOneObject);
             }
         }

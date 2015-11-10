@@ -167,6 +167,7 @@ class Model implements \JsonSerializable {
                 $result[$key] = null;
             }
         }
+
         foreach ($this->fields as $key => $value) {
             if ($value !== null) {
                 $result[$key] = $value;
@@ -185,7 +186,7 @@ class Model implements \JsonSerializable {
             }
 
             foreach ($this->toManys as $key => $array) {
-                if ($array != null) {
+                if ($array !== null) {
                     $result[$key] = array();
                     foreach ($array as $i => $model) {
                         if ($model !== null && $model instanceof Model) {
@@ -202,14 +203,18 @@ class Model implements \JsonSerializable {
             }
 
             foreach ($this->metadata as $key => $value) {
-                $result[$key] = $value;
+                if ($value instanceof ModelCollection || $value instanceof Model) {
+                    $result[$key] = $value->toArray();
+                } else {
+                    $result[$key] = $value;
+                }
             }
 
             if (!$onlyFields) {
                 $result["fromDb"] = $this->fromDb;
             }
         }
-
+        
         return $result;
     }
 
@@ -218,27 +223,31 @@ class Model implements \JsonSerializable {
      * @return array
      */
     public function jsonSerialize() {
-        if(is_array($this->toArray())) {
+        if (is_array($this->toArray())) {
             return $this->toUtf8Array($this->toArray());
         } else {
             return $this->toArray();
         }
     }
-    
+
     /**
      * 
      * @param array $array
      * @return array
      */
     protected function toUtf8Array($array) {
-        foreach($array as $key => $cell) {
-            if(is_array($cell)) {
+        foreach ($array as $key => $cell) {
+            if (is_array($cell)) {
                 $array[$key] = $this->toUtf8Array($cell);
-            } else {
+            } elseif (!is_object($cell)) {
                 $array[$key] = $this->toUtf8String($cell);
+            } elseif ($cell instanceof Model) {
+                $array[$key] = $this->toUtf8Array($cell->toArray());
+            } else {
+                $array[$key] = $this->toUtf8Array((array) $cell);
             }
         }
-        
+
         return $array;
     }
 
@@ -246,11 +255,12 @@ class Model implements \JsonSerializable {
      * @param string $str
      * @return string
      */
-    protected function toUtf8String($str) {        
+    protected function toUtf8String($str) {
         if (mb_detect_encoding($str, 'UTF-8', true) === false) {
             return utf8_encode($str);
         }
-        
+
         return $str;
     }
+
 }
