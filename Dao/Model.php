@@ -214,7 +214,7 @@ class Model implements \JsonSerializable {
                 $result["fromDb"] = $this->fromDb;
             }
         }
-
+        
         return $result;
     }
 

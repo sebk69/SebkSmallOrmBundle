@@ -98,14 +98,20 @@ class ModelCollection implements \IteratorAggregate, \ArrayAccess, \JsonSerializ
     }
     
     public function jsonSerialize() {
-        return $this->toArray();
+        $result = array();
+        
+        foreach($this->objects as $key => $value) {
+            $result[] = $value->jsonSerialize();
+        }
+        
+        return $result;
     }
     
     public function toArray() {
         $result = array();
         
         foreach($this->objects as $key => $value) {
-            $result[$key] = $value->toArray();
+            $result[] = $value->toArray();
         }
         
         return $result;
