@@ -234,8 +234,12 @@ class Model implements \JsonSerializable {
         foreach($array as $key => $cell) {
             if(is_array($cell)) {
                 $array[$key] = $this->toUtf8Array($cell);
-            } else {
+            } elseif(!is_object($cell)) {
                 $array[$key] = $this->toUtf8String($cell);
+            } elseif($cell instanceof Model) {
+                $array[$key] = $this->toUtf8Array($cell->toArray());
+            } else {
+                $array[$key] = $this->toUtf8Array((array)$cell);
             }
         }
         
