@@ -49,7 +49,7 @@ class Condition
         }
 
         if ($var instanceof QueryBuilder) {
-            return static::TYPE_FIELD;
+            return static::TYPE_SUBQUERY;
         }
 
         if (is_object($var)) {
