@@ -154,12 +154,12 @@ abstract class AbstractDao {
         }
 
         $model = new $modelClass($this->modelName, $this->modelBundle, $primaryKeys, $fields, $toOnes, $toManys);
-        
-        foreach($this->defaultValues as $property => $defaultValue) {
-            $method = "set".$property;
+
+        foreach ($this->defaultValues as $property => $defaultValue) {
+            $method = "set" . $property;
             $model->$method($defaultValue);
         }
-        
+
         return $model;
     }
 
@@ -168,10 +168,9 @@ abstract class AbstractDao {
      * @param Model || array $array
      * @return ModelCollection
      */
-    public function newCollection($array = array())
-    {
+    public function newCollection($array = array()) {
         $modelClass = $this->modelNamespace . "\\" . $this->modelName . "Collection";
-        if(class_exists($modelClass)) {
+        if (class_exists($modelClass)) {
             $collection = new $modelClass($array);
         } else {
             $collection = new ModelCollection($array);
@@ -268,7 +267,7 @@ abstract class AbstractDao {
     public function getResult(QueryBuilder $query, $asCollection = false) {
         $records = $this->getRawResult($query);
 
-        if(!$query->isRawSelect()) {
+        if (!$query->isRawSelect()) {
             return $this->buildResult($query, $records, null, $asCollection);
         }
 
@@ -298,7 +297,7 @@ abstract class AbstractDao {
             $alias = $query->getRelation()->getAlias();
         }
 
-        if($asCollection) {
+        if ($asCollection) {
             $result = $this->newCollection();
         } else {
             $result = array();
@@ -313,6 +312,7 @@ abstract class AbstractDao {
                 foreach ($ids as $idName => $idValue) {
                     if (count($group) && count($savedIds) && $savedIds[$idName] != $idValue) {
                         $result[] = $this->populate($query, $alias, $group, $asCollection);
+
                         $group = array();
                     }
 
@@ -368,6 +368,10 @@ abstract class AbstractDao {
         $model->setOriginalPrimaryKeys();
         $model->fromDb = true;
 
+        if (method_exists($model, "onLoad")) {
+            $model->onLoad();
+        }
+
         return $model;
     }
 
@@ -422,8 +426,8 @@ abstract class AbstractDao {
             }
         }
 
-        if($alias == $query->getGroupByAlias()) {
-            foreach($query->getGroupByOperations() as $operation) {
+        if ($alias == $query->getGroupByAlias()) {
+            foreach ($query->getGroupByOperations() as $operation) {
                 if (array_key_exists($operation->getAlias(), $record)) {
                     $result[$operation->getAlias()] = $record[$operation->getAlias()];
                 }
@@ -508,10 +512,10 @@ abstract class AbstractDao {
      * @param \Sebk\SmallOrmBundle\Dao\Model $model
      * @return \Sebk\SmallOrmBundle\Dao\AbstractDao
      */
-    public function insert(Model $model) {
+    protected function insert(Model $model) {
         $sql = "INSERT INTO " . $this->connection->getDatabase() . "." . $this->dbTableName . " ";
         $fields = $model->toArray(false, true);
-        
+
         $columns = array();
         foreach ($fields as $key => $val) {
             $queryFields[$key] = ":$key";
@@ -561,7 +565,7 @@ abstract class AbstractDao {
      * @return \Sebk\SmallOrmBundle\Dao\AbstractDao
      * @throws DaoException
      */
-    public function update(Model $model) {
+    protected function update(Model $model) {
         if (!$model->fromDb) {
             throw new DaoException("Try update a record not from db from '$this->modelBundle' '$this->modelName' model");
         }
@@ -634,10 +638,18 @@ abstract class AbstractDao {
      * @param \Sebk\SmallOrmBundle\Dao\Model $model
      */
     public function persist(Model $model) {
+        if(method_exists($model, "beforeSave")) {
+            $model->beforeSave();
+        }
+        
         if ($model->fromDb) {
             $this->update($model);
         } else {
             $this->insert($model);
+        }
+        
+        if(method_exists($model, "afterSave")) {
+            $model->afterSave();
         }
     }
 
@@ -661,11 +673,11 @@ abstract class AbstractDao {
             } else {
                 try {
                     $relation = $this->getRelation($prop);
-                    if($relation instanceof ToOneRelation) {
+                    if ($relation instanceof ToOneRelation) {
                         $model->$method($relation->getDao()->makeModelFromStdClass($value));
                     } elseif ($relation instanceof ToManyRelation) {
                         $objects = array();
-                        foreach($value as $key => $modelStdClass) {
+                        foreach ($value as $key => $modelStdClass) {
                             $objects[$key] = $relation->getDao()->makeModelFromStdClass($modelStdClass);
                         }
                         $model->$method($objects);
