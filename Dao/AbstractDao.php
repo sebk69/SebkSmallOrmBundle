@@ -271,7 +271,7 @@ abstract class AbstractDao {
      * @param string $alias
      * @return array
      */
-    protected function buildResult(QueryBuilder $query, $records, $alias = null, $asCollection) {
+    protected function buildResult(QueryBuilder $query, $records, $alias = null, $asCollection, $groupByModels = false) {
         if ($alias === null) {
             $alias = $query->getRelation()->getAlias();
         }
@@ -290,7 +290,7 @@ abstract class AbstractDao {
             if ($ids !== null) {
                 foreach ($ids as $idName => $idValue) {
                     if (count($group) && count($savedIds) && $savedIds[$idName] != $idValue) {
-                        $result[] = $this->populate($query, $alias, $group, $asCollection);
+                        $result[] = $this->populate($query, $alias, $group, $asCollection, $groupByModels);
 
                         $group = array();
                     }
@@ -304,7 +304,7 @@ abstract class AbstractDao {
             }
         }
         if (count($group)) {
-            $result[] = $this->populate($query, $alias, $group, $asCollection);
+            $result[] = $this->populate($query, $alias, $group, $asCollection, $groupByModels);
         }
 
         return $result;
@@ -317,7 +317,7 @@ abstract class AbstractDao {
      * @param array $records
      * @return Model
      */
-    protected function populate(QueryBuilder $query, $alias, $records, $asCollection) {
+    protected function populate(QueryBuilder $query, $alias, $records, $asCollection, $groupByModels) {
         $model = $this->newModel();
         $fields = $this->extractFieldsOfRecord($query, $alias, $records[0]);
 
@@ -325,11 +325,17 @@ abstract class AbstractDao {
             $method = "set" . $property;
             $model->$method($value);
         }
+        
+        if(!$groupByModels) {
+            if($query->getGroupByAlias() == $alias) {
+                $groupByModels = true;
+            }
+        }
 
         foreach ($query->getChildRelationsForAlias($alias) as $join) {
             if ($join->getDaoRelation() instanceof ToOneRelation) {
                 $method = "set" . $join->getDaoRelation()->getAlias();
-                $toOneObjects = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias(), $asCollection);
+                $toOneObjects = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias(), $asCollection, $groupByModels);
                 if (count($toOneObjects)) {
                     $model->$method($toOneObjects[0]);
                 } else {
@@ -337,9 +343,9 @@ abstract class AbstractDao {
                 }
             }
 
-            if ($join->getDaoRelation() instanceof ToManyRelation) {
+            if ($join->getDaoRelation() instanceof ToManyRelation && !$groupByModels) {
                 $method = "set" . $join->getDaoRelation()->getAlias();
-                $toOneObject = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias(), $asCollection);
+                $toOneObject = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias(), $asCollection, $groupByModels);
                 $model->$method($toOneObject);
             }
         }

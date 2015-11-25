@@ -46,18 +46,18 @@ class QueryBuilder
      */
     public function getFieldsForSqlAsString()
     {
-        if ($this->groupBy === null) {
+        /*if ($this->groupBy === null) {
             $exludeJoinsArray = array();
         } else {
             $exludeJoinsArray = $this->getJoinsWithoutGroupBy();
-        }
+        }*/
 
         $resultArray = $this->from->getFieldsForSqlAsArray();
         foreach ($this->joins as $join) {
-            if (!in_array($join->getAlias(), $exludeJoinsArray)) {
+            //if (!in_array($join->getAlias(), $exludeJoinsArray)) {
                 $resultArray = array_merge($resultArray,
                     $join->getFieldsForSqlAsArray());
-            }
+            //}
         }
 
         foreach ($this->groupByOperations as $operation) {
@@ -199,8 +199,8 @@ class QueryBuilder
     {
         $result = array();
         foreach ($this->joins as $join) {
-            if ($join->getFromAlias() == $alias && !in_array($join->getAlias(),
-                    $this->getJoinsWithoutGroupBy())) {
+            if ($join->getFromAlias() == $alias /*&& !in_array($join->getAlias(),
+                    $this->getJoinsWithoutGroupBy())*/) {
                 $result[] = $join;
             }
         }
