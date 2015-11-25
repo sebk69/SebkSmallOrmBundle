@@ -11,6 +11,7 @@ namespace Sebk\SmallOrmBundle\Dao;
 use Sebk\SmallOrmBundle\Database\Connection;
 use Sebk\SmallOrmBundle\Factory\Dao;
 use Sebk\SmallOrmBundle\QueryBuilder\QueryBuilder;
+use Sebk\SmallOrmBundle\QueryBuilder\UpdateBuilder;
 
 /**
  * Abstract class to provide base dao features
@@ -188,6 +189,15 @@ abstract class AbstractDao {
     }
 
     /**
+     * Create update builder object to update table of this dao
+     * @param type $alias
+     * @return UpdateBuilder
+     */
+    public function createUpdateBuilder($alias = null) {
+        return new UpdateBuilder($this, $alias);
+    }
+
+    /**
      * Execute sql and get raw result
      * @param QueryBuilder $query
      * @return array
@@ -262,6 +272,17 @@ abstract class AbstractDao {
         }
 
         return $records;
+    }
+
+    /**
+     * Get result for a query
+     * @param QueryBuilder $query
+     * @return array
+     */
+    public function executeUpdate(UpdateBuilder $query, $asCollection = false) {
+        $this->connection->execute($query->getSql(), $query->getParameters());
+
+        return $this;
     }
 
     /**
