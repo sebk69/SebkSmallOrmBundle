@@ -459,6 +459,14 @@ class QueryBuilder
 
         throw new QueryBuilderException("Field '$fieldName' is not in model aliased '$modelAlias'");
     }
+    
+    /**
+     * Remove order by defined before
+     */
+    public function clearOrderBy()
+    {
+        $this->orderBy = array();
+    }
 
     /**
      * Return where to be completed
