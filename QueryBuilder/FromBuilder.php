@@ -52,9 +52,14 @@ class FromBuilder
      * @param Field $field
      * @return string
      */
-    protected function buildFieldForSql(Field $field)
+    protected function buildFieldForSql(Field $field, $withAlias = true)
     {
-        return $this->alias.".".$field->getDbName()." AS ".$this->getFieldAliasForSql($field);
+        $result = $this->alias.".".$field->getDbName();
+        if($withAlias) {
+            $result .= " AS ".$this->getFieldAliasForSql($field);
+        }
+        
+        return $result;
     }
 
     /**
@@ -83,11 +88,11 @@ class FromBuilder
      * @param string $field
      * @return string
      */
-    public function buildFieldIdentifiedByStringForSql($fieldNameInModel)
+    public function buildFieldIdentifiedByStringForSql($fieldNameInModel, $withAlias = true)
     {
         $field = $this->getDao()->getField($fieldNameInModel);
 
-        return $this->buildFieldForSql($field);
+        return $this->buildFieldForSql($field, $withAlias);
     }
 
     /**

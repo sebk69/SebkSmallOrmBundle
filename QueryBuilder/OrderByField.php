@@ -46,6 +46,6 @@ class OrderByField
      */
     public function getSql()
     {
-        return $this->model->getFieldAliasIdentifiedByStringForSql($this->fieldNameInModel)." ".$this->sens." ";
+        return $this->model->buildFieldIdentifiedByStringForSql($this->fieldNameInModel, false)." ".$this->sens." ";
     }
 }
