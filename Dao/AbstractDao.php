@@ -21,6 +21,7 @@ abstract class AbstractDao {
     protected $connection;
     protected $daoFactory;
     protected $modelNamespace;
+    protected $container;
     private $modelName;
     private $modelBundle;
     private $dbTableName;
@@ -30,12 +31,13 @@ abstract class AbstractDao {
     private $toMany = array();
     private $defaultValues = array();
 
-    public function __construct(Connection $connection, Dao $daoFactory, $modelNamespace, $modelName, $modelBundle) {
+    public function __construct(Connection $connection, Dao $daoFactory, $modelNamespace, $modelName, $modelBundle, $container) {
         $this->connection = $connection;
         $this->daoFactory = $daoFactory;
         $this->modelNamespace = $modelNamespace;
         $this->modelName = $modelName;
         $this->modelBundle = $modelBundle;
+        $this->container = $container;
 
         $this->build();
     }
@@ -153,7 +155,7 @@ abstract class AbstractDao {
             $toManys[] = lcFirst($toManyAlias);
         }
 
-        $model = new $modelClass($this->modelName, $this->modelBundle, $primaryKeys, $fields, $toOnes, $toManys);
+        $model = new $modelClass($this->modelName, $this->modelBundle, $primaryKeys, $fields, $toOnes, $toManys, $this->container);
 
         foreach ($this->defaultValues as $property => $defaultValue) {
             $method = "set" . $property;
@@ -379,6 +381,44 @@ abstract class AbstractDao {
         }
 
         return $model;
+    }
+    
+    /**
+     * Load a toOneRelation
+     * @param string $alias
+     * @param Model $model
+     * @return Model
+     */
+    public function loadToOne($alias, $model, $dependenciesAliases = array()) {
+        $relation = $this->toOne[$alias];
+        
+        $keys = array();
+        foreach($relation->getKeys() as $keyFrom => $keyTo) {
+            $method = "get".$keyFrom;
+            $keys[$keyTo] = $model->$method();
+        }
+        
+        $method = "set".$alias;
+        $model->$method($relation->getDao()->findOneBy($keys, $dependenciesAliases));
+    }
+    
+    /**
+     * Load a toManyRelation
+     * @param string $alias
+     * @param Model $model
+     * @return Model
+     */
+    public function loadToMany($alias, $model, $dependenciesAliases = array()) {
+        $relation = $this->toMany[$alias];
+        
+        $keys = array();
+        foreach($relation->getKeys() as $keyFrom => $keyTo) {
+            $method = "get".$keyFrom;
+            $keys[$keyTo] = $model->$method();
+        }
+        
+        $method = "set".$alias;
+        $model->$method($relation->getDao()->findBy($keys, $dependenciesAliases));
     }
 
     /**
@@ -714,8 +754,13 @@ abstract class AbstractDao {
      * @param array $conds
      * @return array
      */
-    public function findBy($conds) {
+    public function findBy($conds, $dependenciesAliases = array()) {
         $query = $this->createQueryBuilder(lcfirst($this->modelName));
+        
+        foreach($dependenciesAliases as $aliasFrom => $aliasTo) {
+            $query->leftJoin($aliasFrom, $aliasTo);
+        }
+        
         $where = $query->where();
 
         $first = true;
@@ -740,8 +785,8 @@ abstract class AbstractDao {
      * @return Model
      * @throws DaoException
      */
-    public function findOneBy($conds) {
-        $results = $this->findBy($conds);
+    public function findOneBy($conds, $dependenciesAliases = array()) {
+        $results = $this->findBy($conds, $dependenciesAliases);
 
         if (count($results) == 0) {
             throw new DaoException("Find one with no result");

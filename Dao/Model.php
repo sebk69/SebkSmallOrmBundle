@@ -15,6 +15,7 @@ class Model implements \JsonSerializable {
 
     private $modelName;
     private $bundle;
+    protected $container;
     private $primaryKeys = array();
     private $originalPrimaryKeys = null;
     private $fields = array();
@@ -30,9 +31,10 @@ class Model implements \JsonSerializable {
      * @param array $primaryKeys
      * @param array $fields
      */
-    public function __construct($modelName, $bundle, $primaryKeys, $fields, $toOnes, $toManys) {
+    public function __construct($modelName, $bundle, $primaryKeys, $fields, $toOnes, $toManys, $container) {
         $this->modelName = $modelName;
         $this->bundle = $bundle;
+        $this->container = $container;
 
         foreach ($primaryKeys as $primaryKey) {
             $this->primaryKeys[$primaryKey] = null;
@@ -214,7 +216,7 @@ class Model implements \JsonSerializable {
                 $result["fromDb"] = $this->fromDb;
             }
         }
-        
+
         return $result;
     }
 
@@ -263,4 +265,39 @@ class Model implements \JsonSerializable {
         return $str;
     }
 
+    /**
+     * Load a toOne relation if not loaded
+     * @param type $alias
+     * @throws DaoException
+     */
+    protected function loadToOne($alias, $dependenciesAliases) {
+        if (!array_key_exists($alias, $this->toOnes)) {
+            throw new DaoException("Field '$alias' does not exists (loading to one relation");
+        }
+
+        if ($this->toOnes[$alias] === null) {
+            $this->container
+                    ->get("sebk_small_orm_dao")
+                    ->get($this->bundle, $this->modelName)
+                    ->loadToOne($alias, $this, $dependenciesAliases);
+        }
+    }
+    
+    /**
+     * Load a toMany relation if not loaded
+     * @param type $alias
+     * @throws DaoException
+     */
+    protected function loadToMany($alias, $dependenciesAliases) {
+        if (!array_key_exists($alias, $this->toManys)) {
+            throw new DaoException("Field '$alias' does not exists (loading to one relation");
+        }
+
+        if (count($this->toManys[$alias])) {
+            $this->container
+                    ->get("sebk_small_orm_dao")
+                    ->get($this->bundle, $this->modelName)
+                    ->loadToMany($alias, $this, $dependenciesAliases);
+        }
+    }
 }

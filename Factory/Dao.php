@@ -14,6 +14,7 @@ class Dao
 {
     protected $connectionFactory;
     protected $config;
+    protected $container;
     protected static $loadedDao = array();
 
     /**
@@ -21,10 +22,11 @@ class Dao
      * @param \Sebk\SmallOrmBundle\Factory\Connections $connectionFactory
      * @param type $config
      */
-    public function __construct(Connections $connectionFactory, $config)
+    public function __construct(Connections $connectionFactory, $config, $container)
     {
         $this->connectionFactory = $connectionFactory;
         $this->config            = $config;
+        $this->container         = $container;
     }
 
     /**
@@ -50,7 +52,8 @@ class Dao
             if (class_exists($className)) {
                 static::$loadedDao[$bundle][$model] = new $className($this->connectionFactory->get($connectionName),
                     $this, $connectionsParams["model_namespace"], $model,
-                    $bundle);
+                    $bundle,
+                    $this->container);
 
                 return static::$loadedDao[$bundle][$model];
             }
