@@ -83,7 +83,7 @@ abstract class AbstractValidator
         $dao      = $this->daoFactory->get($this->model->getBundle(),
             $this->model->getModelName());
         $creation = !$this->model->fromDb;
-
+        
         $query  = $dao->createQueryBuilder("unique");
         $where  = $query->where();
         $method = "get".$field;

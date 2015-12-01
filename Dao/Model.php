@@ -270,7 +270,7 @@ class Model implements \JsonSerializable {
      * @param type $alias
      * @throws DaoException
      */
-    protected function loadToOne($alias, $dependenciesAliases) {
+    protected function loadToOne($alias, $dependenciesAliases = array()) {
         if (!array_key_exists($alias, $this->toOnes)) {
             throw new DaoException("Field '$alias' does not exists (loading to one relation");
         }
@@ -288,12 +288,12 @@ class Model implements \JsonSerializable {
      * @param type $alias
      * @throws DaoException
      */
-    protected function loadToMany($alias, $dependenciesAliases) {
+    protected function loadToMany($alias, $dependenciesAliases = array()) {
         if (!array_key_exists($alias, $this->toManys)) {
-            throw new DaoException("Field '$alias' does not exists (loading to one relation");
+            throw new DaoException("Field '$alias' does not exists (loading to many relation");
         }
 
-        if (count($this->toManys[$alias])) {
+        if (!count($this->toManys[$alias])) {
             $this->container
                     ->get("sebk_small_orm_dao")
                     ->get($this->bundle, $this->modelName)

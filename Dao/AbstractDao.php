@@ -716,7 +716,7 @@ abstract class AbstractDao {
                 } catch (ModelException $e) {
                     
                 }
-            } else {
+            } elseif($value !== null) {
                 try {
                     $relation = $this->getRelation($prop);
                     if ($relation instanceof ToOneRelation) {
