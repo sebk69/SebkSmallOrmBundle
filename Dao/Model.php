@@ -92,6 +92,7 @@ class Model implements \JsonSerializable {
                 } elseif ($typeField == "metadata" && array_key_exists($name, $this->metadata)) {
                     return $this->metadata[$name];
                 }
+                throw new ModelException("Method '$method' does not exists");
                 break;
             case "set":
                 if ($typeField == "primaryKeys") {
@@ -270,7 +271,7 @@ class Model implements \JsonSerializable {
      * @param type $alias
      * @throws DaoException
      */
-    protected function loadToOne($alias, $dependenciesAliases = array()) {
+    public function loadToOne($alias, $dependenciesAliases = array()) {
         if (!array_key_exists($alias, $this->toOnes)) {
             throw new DaoException("Field '$alias' does not exists (loading to one relation");
         }
@@ -288,7 +289,7 @@ class Model implements \JsonSerializable {
      * @param type $alias
      * @throws DaoException
      */
-    protected function loadToMany($alias, $dependenciesAliases = array()) {
+    public function loadToMany($alias, $dependenciesAliases = array()) {
         if (!array_key_exists($alias, $this->toManys)) {
             throw new DaoException("Field '$alias' does not exists (loading to many relation");
         }
@@ -299,5 +300,11 @@ class Model implements \JsonSerializable {
                     ->get($this->bundle, $this->modelName)
                     ->loadToMany($alias, $this, $dependenciesAliases);
         }
+    }
+    
+    protected function getDao() {
+        return $this->container
+                    ->get("sebk_small_orm_dao")
+                    ->get($this->bundle, $this->modelName);
     }
 }

@@ -233,6 +233,8 @@ abstract class AbstractDao {
         foreach ($this->getFields() as $field) {
             if ($field->getModelName() == $fieldName) {
                 return $field;
+            } elseif($field->getModelName() == ucfirst($fieldName)) {
+                return $field;
             }
         }
 
@@ -398,8 +400,12 @@ abstract class AbstractDao {
             $keys[$keyTo] = $model->$method();
         }
         
-        $method = "set".$alias;
-        $model->$method($relation->getDao()->findOneBy($keys, $dependenciesAliases));
+        $results = $relation->getDao()->findBy($keys, $dependenciesAliases);
+        
+        if(count($results) == 1) {
+            $method = "set".$alias;
+            $model->$method($results[0]);
+        }
     }
     
     /**
