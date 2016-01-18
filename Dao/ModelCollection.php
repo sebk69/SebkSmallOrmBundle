@@ -121,4 +121,9 @@ class ModelCollection implements \IteratorAggregate, \ArrayAccess, \JsonSerializ
     {
         return new \ArrayIterator($this->objects);
     }
+    
+    function count()
+    {
+        return count($this->objects);
+    }
 }

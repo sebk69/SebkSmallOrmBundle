@@ -361,7 +361,7 @@ abstract class AbstractDao {
             if ($join->getDaoRelation() instanceof ToOneRelation) {
                 $method = "set" . $join->getDaoRelation()->getAlias();
                 $toOneObjects = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias(), $asCollection, $groupByModels);
-                if (count($toOneObjects)) {
+                if ((!$asCollection && count($toOneObjects)) || ($asCollection && $toOneObjects->count())) {
                     $model->$method($toOneObjects[0]);
                 } else {
                     $model->$method(null);
