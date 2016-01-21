@@ -26,6 +26,7 @@ class QueryBuilder {
     protected $groupBy;
     protected $groupByOperations = array();
     protected $rawSelect = null;
+    protected $rawJoin = "";
 
     /**
      * Construct QueryBuilder
@@ -304,6 +305,13 @@ class QueryBuilder {
 
         return $this->where;
     }
+    
+    public function rawJoin($joinString)
+    {
+        $this->rawJoin = $joinString;
+        
+        return $this;
+    }
 
     /**
      * Return sql statement for this query
@@ -326,6 +334,8 @@ class QueryBuilder {
         foreach ($this->joins as $join) {
             $sql .= $join->getSql();
         }
+        
+        $sql .= " ".$this->rawJoin;
 
         if ($this->where !== null && trim($this->where->getSql())) {
             $sql .= " WHERE ";

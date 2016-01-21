@@ -42,13 +42,13 @@ class Condition
     {
         switch($this->type1) {
             case static::TYPE_SUBQUERY:
-                $this->type1 = clone $this->type1;
+                $this->var1 = clone $this->var1;
                 break;
         }
         
         switch($this->type2) {
             case static::TYPE_SUBQUERY:
-                $this->type2 = clone $this->type2;
+                $this->var2 = clone $this->var2;
                 break;
         }
     }
@@ -142,9 +142,9 @@ class Condition
                         array(static::TYPE_FIELD, static::TYPE_VALUE, static::TYPE_CONSTANT))) {
                     throw new ConditionException("Variable of type '".$this->type1."' is not possible as left operator for operator '$operator'");
                 }
-                if (!in_array($this->type1,
+                if (!in_array($this->type2,
                         array(static::TYPE_SUBQUERY, static::TYPE_ARRAY))) {
-                    throw new ConditionException("Variable of type '".$this->type1."' is not possible as right operator for operator '$operator'");
+                    throw new ConditionException("Variable of type '".$this->type2."' is not possible as right operator for operator '$operator'");
                 }
                 break;
 
