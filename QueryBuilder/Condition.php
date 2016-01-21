@@ -37,6 +37,21 @@ class Condition
         $this->var1     = $var1;
         $this->var2     = $var2;
     }
+    
+    public function __clone()
+    {
+        switch($this->type1) {
+            case static::TYPE_SUBQUERY:
+                $this->type1 = clone $this->type1;
+                break;
+        }
+        
+        switch($this->type2) {
+            case static::TYPE_SUBQUERY:
+                $this->type2 = clone $this->type2;
+                break;
+        }
+    }
 
     public function getVarType($var)
     {

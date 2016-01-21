@@ -27,6 +27,13 @@ class JoinBuilder extends FromBuilder
 
         return $this;
     }
+    
+    public function __clone()
+    {
+        $this->from = clone $this->from;
+        $this->relation = clone $this->relation;
+        $this->bracket = clone $this->bracket;
+    }
 
     /**
      * Set from and build primary conditions of relation

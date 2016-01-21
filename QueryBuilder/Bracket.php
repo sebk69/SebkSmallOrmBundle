@@ -24,6 +24,24 @@ class Bracket
     {
         $this->parent = $parent;
     }
+    
+    public function setParent($parent)
+    {
+        $this->parent = $parent;
+    }
+    
+    public function __clone()
+    {
+        $fromConditions = $this->conditions;
+        $this->conditions = array();
+        foreach($fromConditions as $condition) {
+            $toCondition = clone $condition;
+            if($toCondition instanceof Bracket) {
+                $toCondition->setParent($this);
+            }
+            $this->conditions[] = $toCondition;
+        }
+    }
 
     /**
      * Add first condition

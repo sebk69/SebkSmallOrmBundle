@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is a part of SebkSmallOrmBundle
  * Copyright 2015 - Sébastien Kus
@@ -12,27 +13,26 @@ use Sebk\SmallOrmBundle\Dao\AbstractDao;
 /**
  * Sql query builder
  */
-class QueryBuilder
-{
+class QueryBuilder {
+
     protected $from;
-    protected $joins             = array();
+    protected $joins = array();
     protected $where;
     protected $forcedSql;
-    protected $parameters        = array();
-    protected $offset            = null;
-    protected $limit             = null;
-    protected $orderBy           = array();
+    protected $parameters = array();
+    protected $offset = null;
+    protected $limit = null;
+    protected $orderBy = array();
     protected $groupBy;
     protected $groupByOperations = array();
-    protected $rawSelect         = null;
+    protected $rawSelect = null;
 
     /**
      * Construct QueryBuilder
      * @param AbstractDao $baseDao
      * @param string $baseAlias
      */
-    public function __construct(AbstractDao $baseDao, $baseAlias = null)
-    {
+    public function __construct(AbstractDao $baseDao, $baseAlias = null) {
         if ($baseAlias == null) {
             $baseAlias = $baseDao->getModelName();
         }
@@ -40,23 +40,43 @@ class QueryBuilder
         $this->from = new FromBuilder($baseDao, $baseAlias);
     }
 
+    public function __clone() {
+        $this->from = clone $this->from;
+        $fromJoins = $this->joins;
+        $this->joins = array();
+        foreach ($fromJoins as $join) {
+            $this->joins[] = clone $join;
+        }
+        $this->where = clone $this->where;
+        $this->where->setParent($this);
+        
+        $fromOrderBy = $this->orderBy;
+        $this->orderBy = array();
+        foreach ($fromOrderBy as $orderBy) {
+            $this->orderBy[] = clone $orderBy;
+        }
+        $fromGroupByOperations = $this->groupByOperations;
+        $this->groupByOperations = array();
+        foreach ($fromGroupByOperations as $groupByOperation) {
+            $this->groupByOperations[] = clone $groupByOperation;
+        }
+    }
+
     /**
      * Format select part as string
      * @return string
      */
-    public function getFieldsForSqlAsString()
-    {
-        /*if ($this->groupBy === null) {
-            $exludeJoinsArray = array();
-        } else {
-            $exludeJoinsArray = $this->getJoinsWithoutGroupBy();
-        }*/
+    public function getFieldsForSqlAsString() {
+        /* if ($this->groupBy === null) {
+          $exludeJoinsArray = array();
+          } else {
+          $exludeJoinsArray = $this->getJoinsWithoutGroupBy();
+          } */
 
         $resultArray = $this->from->getFieldsForSqlAsArray();
         foreach ($this->joins as $join) {
             //if (!in_array($join->getAlias(), $exludeJoinsArray)) {
-                $resultArray = array_merge($resultArray,
-                    $join->getFieldsForSqlAsArray());
+            $resultArray = array_merge($resultArray, $join->getFieldsForSqlAsArray());
             //}
         }
 
@@ -71,16 +91,14 @@ class QueryBuilder
      * @param array $joinsArray
      * @return array
      */
-    protected function getJoinsWithoutGroupBy($joinsArray = null)
-    {
+    protected function getJoinsWithoutGroupBy($joinsArray = null) {
         if ($joinsArray === null) {
             $joinsArray = array($this->groupBy);
         }
 
         $startJoinArray = $joinsArray;
         foreach ($this->joins as $join) {
-            if (in_array($join->getFromAlias(), $joinsArray) && !in_array($join->getAlias(),
-                    $joinsArray)) {
+            if (in_array($join->getFromAlias(), $joinsArray) && !in_array($join->getAlias(), $joinsArray)) {
                 $joinsArray[] = $join->getAlias();
             }
         }
@@ -99,8 +117,7 @@ class QueryBuilder
      * @param type $sql
      * @return \Sebk\SmallOrmBundle\QueryBuilder\QueryBuilder
      */
-    public function rawSelect($sql)
-    {
+    public function rawSelect($sql) {
         $this->rawSelect = $sql;
 
         return $this;
@@ -109,8 +126,7 @@ class QueryBuilder
     /**
      * @return boolean
      */
-    public function isRawSelect()
-    {
+    public function isRawSelect() {
         return $this->rawSelect !== null;
     }
 
@@ -119,8 +135,7 @@ class QueryBuilder
      * @return \Sebk\SmallOrmBundle\QueryBuilder\QueryBuilder
      * @throws QueryBuilderException
      */
-    public function groupBy($alias)
-    {
+    public function groupBy($alias) {
         if ($alias == $this->from->getAlias()) {
             $this->groupBy = $alias;
 
@@ -141,16 +156,14 @@ class QueryBuilder
     /**
      * @return string
      */
-    public function getGroupByAlias()
-    {
+    public function getGroupByAlias() {
         return $this->groupBy;
     }
 
     /**
      * @return array
      */
-    public function getGroupByOperations()
-    {
+    public function getGroupByOperations() {
         return $this->groupByOperations;
     }
 
@@ -160,11 +173,8 @@ class QueryBuilder
      * @param string $operation
      * @return \Sebk\SmallOrmBundle\QueryBuilder\QueryBuilder
      */
-    public function addGroupByOperation($operation, $modelAlias, $field,
-                                        $operationAlias)
-    {
-        $this->groupByOperations[] = new groupByOperation($operation,
-            $modelAlias, $field, $operationAlias);
+    public function addGroupByOperation($operation, $modelAlias, $field, $operationAlias) {
+        $this->groupByOperations[] = new groupByOperation($operation, $modelAlias, $field, $operationAlias);
 
         return $this;
     }
@@ -176,8 +186,7 @@ class QueryBuilder
      * @return FromBuilder
      * @throws QueryBuilderException
      */
-    public function getRelation($alias = null)
-    {
+    public function getRelation($alias = null) {
         if ($alias === null || $alias == $this->from->getAlias()) {
             return $this->from;
         }
@@ -195,12 +204,11 @@ class QueryBuilder
      *
      * @return array
      */
-    public function getChildRelationsForAlias($alias)
-    {
+    public function getChildRelationsForAlias($alias) {
         $result = array();
         foreach ($this->joins as $join) {
-            if ($join->getFromAlias() == $alias /*&& !in_array($join->getAlias(),
-                    $this->getJoinsWithoutGroupBy())*/) {
+            if ($join->getFromAlias() == $alias /* && !in_array($join->getAlias(),
+              $this->getJoinsWithoutGroupBy()) */) {
                 $result[] = $join;
             }
         }
@@ -211,8 +219,7 @@ class QueryBuilder
      * Format from part as string
      * @return string
      */
-    public function getFromForSqlAsString()
-    {
+    public function getFromForSqlAsString() {
         $result = $this->from->getSql();
 
         return $result;
@@ -225,9 +232,7 @@ class QueryBuilder
      * @param string $alias
      * @return \Sebk\SmallOrmBundle\QueryBuilder\JoinBuilder
      */
-    public function join($fromAlias, $relationAlias, $alias = null,
-                         $type = "join")
-    {
+    public function join($fromAlias, $relationAlias, $alias = null, $type = "join") {
         if ($alias == null) {
             $alias = $relationAlias;
         }
@@ -264,8 +269,7 @@ class QueryBuilder
      * @param string $alias
      * @return \Sebk\SmallOrmBundle\QueryBuilder\LeftJoinBuilder
      */
-    public function leftJoin($fromAlias, $relationAlias, $alias = null)
-    {
+    public function leftJoin($fromAlias, $relationAlias, $alias = null) {
         return $this->join($fromAlias, $relationAlias, $alias, "left join");
     }
 
@@ -276,8 +280,7 @@ class QueryBuilder
      * @param string $alias
      * @return \Sebk\SmallOrmBundle\QueryBuilder\InnerJoinBuilder
      */
-    public function innerJoin($fromAlias, $relationAlias, $alias = null)
-    {
+    public function innerJoin($fromAlias, $relationAlias, $alias = null) {
         return $this->join($fromAlias, $relationAlias, $alias, "inner join");
     }
 
@@ -288,8 +291,7 @@ class QueryBuilder
      * @param string $alias
      * @return \Sebk\SmallOrmBundle\QueryBuilder\InnerJoinBuilder
      */
-    public function fullOuterJoin($fromAlias, $relationAlias, $alias = null)
-    {
+    public function fullOuterJoin($fromAlias, $relationAlias, $alias = null) {
         return $this->join($fromAlias, $relationAlias, $alias, "full outer join");
     }
 
@@ -297,8 +299,7 @@ class QueryBuilder
      * Initialize where clause
      * @return Bracket
      */
-    public function where()
-    {
+    public function where() {
         $this->where = new Bracket($this);
 
         return $this->where;
@@ -308,14 +309,13 @@ class QueryBuilder
      * Return sql statement for this query
      * @return string
      */
-    public function getSql()
-    {
+    public function getSql() {
         if ($this->forcedSql !== null) {
             return $this->forcedSql;
         }
 
         $sql = "SELECT ";
-        if($this->isRawSelect()) {
+        if ($this->isRawSelect()) {
             $sql .= $this->rawSelect;
         } else {
             $sql .= $this->getFieldsForSqlAsString();
@@ -336,16 +336,16 @@ class QueryBuilder
             $groupBy = array();
             if ($this->groupBy == $this->from->getAlias()) {
                 foreach ($this->from->getDao()->getPrimaryKeys() as $key) {
-                    $groupBy[] = $this->from->getAlias().".".$key->getDbName();
+                    $groupBy[] = $this->from->getAlias() . "." . $key->getDbName();
                 }
             } else {
                 foreach ($this->joins[$this->groupBy]->getDao()->getPrimaryKeys() as $key) {
-                    $groupBy[] = $this->joins[$this->groupBy]->getAlias().".".$key->getDbName();
+                    $groupBy[] = $this->joins[$this->groupBy]->getAlias() . "." . $key->getDbName();
                 }
             }
 
 
-            $sql .= " GROUP BY ".implode(", ", $groupBy);
+            $sql .= " GROUP BY " . implode(", ", $groupBy);
         }
 
         if (count($this->orderBy)) {
@@ -358,7 +358,7 @@ class QueryBuilder
         }
 
         if ($this->offset !== null) {
-            $sql .= " LIMIT ".$this->offset.", ".$this->limit;
+            $sql .= " LIMIT " . $this->offset . ", " . $this->limit;
         }
 
         return $sql;
@@ -369,18 +369,16 @@ class QueryBuilder
      * @param string $offset
      * @param string $limit
      */
-    public function limit($offset, $limit)
-    {
+    public function limit($offset, $limit) {
         $this->offset = $offset;
-        $this->limit  = $limit;
+        $this->limit = $limit;
 
         return $this;
     }
 
-    public function paginate($page, $pageSize)
-    {
+    public function paginate($page, $pageSize) {
         $this->offset = ($page - 1) * $pageSize;
-        $this->limit  = $pageSize;
+        $this->limit = $pageSize;
 
         return $this;
     }
@@ -389,8 +387,7 @@ class QueryBuilder
      * Is sql has been forced
      * @return boolean
      */
-    public function isSqlHasBeenForced()
-    {
+    public function isSqlHasBeenForced() {
         return $this->forcedSql === null;
     }
 
@@ -398,8 +395,7 @@ class QueryBuilder
      * Force sql to execute
      * @param string $sql
      */
-    public function forceSql($sql)
-    {
+    public function forceSql($sql) {
         $this->forcedSql = $sql;
 
         return $this;
@@ -412,8 +408,7 @@ class QueryBuilder
      * @return \Sebk\SmallOrmBundle\QueryBuilder\ConditionField
      * @throws QueryBuilderException
      */
-    public function getFieldForCondition($fieldName, $modelAlias = null)
-    {
+    public function getFieldForCondition($fieldName, $modelAlias = null) {
         if ($this->from->getAlias() == $modelAlias || $modelAlias === null) {
             if ($this->from->getDao()->hasField($fieldName)) {
                 return new ConditionField($this->from, $fieldName);
@@ -438,12 +433,10 @@ class QueryBuilder
      * @return \Sebk\SmallOrmBundle\QueryBuilder\ConditionField
      * @throws QueryBuilderException
      */
-    public function addOrderBy($fieldName, $modelAlias = null, $sens = "ASC")
-    {
+    public function addOrderBy($fieldName, $modelAlias = null, $sens = "ASC") {
         if ($this->from->getAlias() == $modelAlias || $modelAlias === null) {
             if ($this->from->getDao()->hasField($fieldName)) {
-                $this->orderBy[] = new OrderByField($this->from, $fieldName,
-                    $sens);
+                $this->orderBy[] = new OrderByField($this->from, $fieldName, $sens);
                 return $this;
             }
         }
@@ -459,12 +452,11 @@ class QueryBuilder
 
         throw new QueryBuilderException("Field '$fieldName' is not in model aliased '$modelAlias'");
     }
-    
+
     /**
      * Remove order by defined before
      */
-    public function clearOrderBy()
-    {
+    public function clearOrderBy() {
         $this->orderBy = array();
     }
 
@@ -472,8 +464,7 @@ class QueryBuilder
      * Return where to be completed
      * @return Bracket
      */
-    public function getWhere()
-    {
+    public function getWhere() {
         return $this->where;
     }
 
@@ -483,8 +474,7 @@ class QueryBuilder
      * @param string $value
      * @return \Sebk\SmallOrmBundle\QueryBuilder\QueryBuilder
      */
-    public function setParameter($paramName, $value)
-    {
+    public function setParameter($paramName, $value) {
         $this->parameters[$paramName] = $value;
 
         return $this;
@@ -494,10 +484,10 @@ class QueryBuilder
      * Get query parameters
      * @return array
      */
-    public function getParameters()
-    {
+    public function getParameters() {
         return $this->parameters;
     }
+
     /**
      * Get raw result of query
      * @return array

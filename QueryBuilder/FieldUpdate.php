@@ -34,6 +34,13 @@ class FieldUpdate
         $this->typeUpdate    = $this->getVarType($update);
         $this->update = $update;
     }
+    
+    public function __clone() 
+    {
+        if($this->getVarType(static::TYPE_SUBQUERYY)) {
+            $this->update = clone $this->update;
+        }
+    }
 
     /**
      * Get type of update

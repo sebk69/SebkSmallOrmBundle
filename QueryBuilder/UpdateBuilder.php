@@ -29,6 +29,23 @@ class UpdateBuilder
 
         $this->from = new FromBuilder($baseDao, $baseAlias);
     }
+    
+    public function __clone() {
+        $this->from = clone $from;
+        $fromJoins = $this->joins;
+        $this->joins = array();
+        foreach ($fromJoins as $join) {
+            $this->joins[] = clone $join;
+        }
+        $this->where = clone $this->where;
+        $this->where->setParent($this);
+        
+        $fieldsUpdateFrom = $this->fieldsUpdate;
+        $this->fieldsUpdate = array();
+        foreach($fieldsUpdateFrom as $fieldUpdate) {
+            $this->fieldsUpdate[] = clone $fieldUpdate;
+        }
+    }
 
     /**
      * Initialize where clause
