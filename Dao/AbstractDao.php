@@ -237,8 +237,8 @@ abstract class AbstractDao {
                 return $field;
             }
         }
-
-        throw new DaoException("Field '$fieldName' not found");
+        
+        throw new DaoException("Field '$fieldName' not found in model '".$this->modelName."'");
     }
 
     /**

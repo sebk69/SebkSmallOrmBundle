@@ -45,21 +45,21 @@ class QueryBuilder {
         $this->from = clone $this->from;
         $fromJoins = $this->joins;
         $this->joins = array();
-        foreach ($fromJoins as $join) {
-            $this->joins[] = clone $join;
+        foreach ($fromJoins as $key => $join) {
+            $this->joins[$key] = clone $join;
         }
         $this->where = clone $this->where;
         $this->where->setParent($this);
-        
+
         $fromOrderBy = $this->orderBy;
         $this->orderBy = array();
-        foreach ($fromOrderBy as $orderBy) {
-            $this->orderBy[] = clone $orderBy;
+        foreach ($fromOrderBy as $key => $orderBy) {
+            $this->orderBy[$key] = clone $orderBy;
         }
         $fromGroupByOperations = $this->groupByOperations;
         $this->groupByOperations = array();
-        foreach ($fromGroupByOperations as $groupByOperation) {
-            $this->groupByOperations[] = clone $groupByOperation;
+        foreach ($fromGroupByOperations as $key => $groupByOperation) {
+            $this->groupByOperations[$key] = clone $groupByOperation;
         }
     }
 
@@ -305,11 +305,10 @@ class QueryBuilder {
 
         return $this->where;
     }
-    
-    public function rawJoin($joinString)
-    {
+
+    public function rawJoin($joinString) {
         $this->rawJoin = $joinString;
-        
+
         return $this;
     }
 
@@ -334,8 +333,8 @@ class QueryBuilder {
         foreach ($this->joins as $join) {
             $sql .= $join->getSql();
         }
-        
-        $sql .= " ".$this->rawJoin;
+
+        $sql .= " " . $this->rawJoin;
 
         if ($this->where !== null && trim($this->where->getSql())) {
             $sql .= " WHERE ";
@@ -426,7 +425,7 @@ class QueryBuilder {
         }
 
         foreach ($this->joins as $joinAlias => $join) {
-            if ($joinAlias == $modelAlias) {
+            if (is_string($joinAlias) && $joinAlias == $modelAlias) {
                 if ($join->getDao()->hasField($fieldName)) {
                     return new ConditionField($join, $fieldName);
                 }

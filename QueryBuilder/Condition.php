@@ -21,6 +21,7 @@ class Condition
     const TYPE_ARRAY    = "array";
     const TYPE_NULL     = "null";
     const TYPE_CONSTANT = "constant";
+    const TYPE_TUPLE = "tuple";
 
     protected $var1;
     protected $type1;
@@ -170,7 +171,7 @@ class Condition
                 break;
 
             case static::TYPE_ARRAY:
-                $sql .= "(".implode(", ", $var).")";
+                $sql .= "(".implode(", '", $var)."')";
                 break;
 
             case static::TYPE_SUBQUERY:
