@@ -269,6 +269,10 @@ abstract class AbstractDao {
      * @return array
      */
     public function getResult(QueryBuilder $query, $asCollection = false) {
+        foreach($this->primaryKeys as $key) {
+            $query->addOrderBy($key->getModelName());
+        }
+
         $records = $this->getRawResult($query);
 
         if (!$query->isRawSelect()) {
