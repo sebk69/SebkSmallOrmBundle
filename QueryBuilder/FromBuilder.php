@@ -108,6 +108,17 @@ class FromBuilder
 
         return $fieldsSelection;
     }
+    
+    public function getDbFieldFromModelAlias($modelAlias) {
+        $fieldsSelection = array();
+        foreach ($this->dao->getFields() as $field) {
+            if($field->getModelName() == $modelAlias) {
+                return $field->getDbName();
+            }
+        }
+
+        throw new QueryBuilderException("Field '$modelAlias' don't exists in model aliased '".$this->alias."'");
+    }
 
     /**
      * Get from part for SQL statement

@@ -175,7 +175,15 @@ class QueryBuilder {
      * @return \Sebk\SmallOrmBundle\QueryBuilder\QueryBuilder
      */
     public function addGroupByOperation($operation, $modelAlias, $field, $operationAlias) {
-        $this->groupByOperations[] = new groupByOperation($operation, $modelAlias, $field, $operationAlias);
+        if($modelAlias == $this->from->getAlias()) {
+            $fieldDb = $this->from->getDbFieldFromModelAlias($field);
+        } elseif(isset($this->joins[$modelAlias])) {
+            $fieldDb = $this->joins[$modelAlias]->getDbFieldFromModelAlias($field);
+        } else {
+            throw new QueryBuilderException("Alias '$modelAlias' is not joined for group by");
+        }
+        
+        $this->groupByOperations[] = new groupByOperation($operation, $modelAlias, $fieldDb, $operationAlias);
 
         return $this;
     }
