@@ -39,6 +39,11 @@ class OrderByField
         $this->fieldNameInModel = $fieldNameInModel;
         $this->sens             = $sens;
     }
+    
+    public function __clone()
+    {
+        $this->model = clone $this->model;
+    }
 
     /**
      *

@@ -21,6 +21,7 @@ class Condition
     const TYPE_ARRAY    = "array";
     const TYPE_NULL     = "null";
     const TYPE_CONSTANT = "constant";
+    const TYPE_TUPLE = "tuple";
 
     protected $var1;
     protected $type1;
@@ -36,6 +37,21 @@ class Condition
         $this->operator = $operator;
         $this->var1     = $var1;
         $this->var2     = $var2;
+    }
+    
+    public function __clone()
+    {
+        switch($this->type1) {
+            case static::TYPE_SUBQUERY:
+                $this->var1 = clone $this->var1;
+                break;
+        }
+        
+        switch($this->type2) {
+            case static::TYPE_SUBQUERY:
+                $this->var2 = clone $this->var2;
+                break;
+        }
     }
 
     public function getVarType($var)
@@ -129,7 +145,7 @@ class Condition
                 }
                 if (!in_array($this->type2,
                         array(static::TYPE_SUBQUERY, static::TYPE_ARRAY))) {
-                    throw new ConditionException("Variable of type '".$this->type1."' is not possible as right operator for operator '$operator'");
+                    throw new ConditionException("Variable of type '".$this->type2."' is not possible as right operator for operator '$operator'");
                 }
                 break;
 
@@ -155,7 +171,7 @@ class Condition
                 break;
 
             case static::TYPE_ARRAY:
-                $sql .= "(".implode(", ", $var).")";
+                $sql .= "(".implode(", '", $var)."')";
                 break;
 
             case static::TYPE_SUBQUERY:
