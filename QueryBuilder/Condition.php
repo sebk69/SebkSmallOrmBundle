@@ -127,7 +127,7 @@ class Condition
                         array(static::TYPE_FIELD, static::TYPE_VALUE, static::TYPE_CONSTANT))) {
                     throw new ConditionException("Variable of type '".$this->type1."' is not possible as left operator for operator '$operator'");
                 }
-                if (!in_array($this->type1,
+                if (!in_array($this->type2,
                         array(static::TYPE_SUBQUERY, static::TYPE_ARRAY))) {
                     throw new ConditionException("Variable of type '".$this->type1."' is not possible as right operator for operator '$operator'");
                 }
