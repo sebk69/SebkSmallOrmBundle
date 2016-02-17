@@ -27,6 +27,7 @@ class QueryBuilder {
     protected $groupByOperations = array();
     protected $rawSelect = null;
     protected $rawJoin = "";
+    protected $rawWhere = null;
 
     /**
      * Construct QueryBuilder
@@ -48,8 +49,10 @@ class QueryBuilder {
         foreach ($fromJoins as $key => $join) {
             $this->joins[$key] = clone $join;
         }
-        $this->where = clone $this->where;
-        $this->where->setParent($this);
+        if($this->where !== null){
+            $this->where = clone $this->where;
+            $this->where->setParent($this);
+        }
 
         $fromOrderBy = $this->orderBy;
         $this->orderBy = array();
@@ -313,6 +316,14 @@ class QueryBuilder {
 
         return $this->where;
     }
+    
+    /**
+     * Replace where by raw where
+     * @param string $where
+     */
+    public function setRawWhere($where) {
+        $this->rawWhere = $where;
+    }
 
     public function rawJoin($joinString) {
         $this->rawJoin = $joinString;
@@ -343,8 +354,10 @@ class QueryBuilder {
         }
 
         $sql .= " " . $this->rawJoin;
-
-        if ($this->where !== null && trim($this->where->getSql())) {
+        
+        if($this->rawWhere !== null) {
+            $sql .= " WHERE ".$this->rawWhere;
+        } elseif ($this->where !== null && trim($this->where->getSql())) {
             $sql .= " WHERE ";
             $sql .= $this->where->getSql();
         }
