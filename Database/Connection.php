@@ -25,13 +25,13 @@ class Connection
      * @param string $password
      * @throws ConnectionException
      */
-    public function __construct($dbType, $host, $database, $user, $password)
+    public function __construct($dbType, $host, $database, $user, $password, $encoding)
     {
         $this->database = $database;
 
         switch ($dbType) {
             case "mysql":
-                $connectionString = "mysql:dbname=$database;host=$host";
+                $connectionString = "mysql:dbname=$database;host=$host;charset=$encoding";
                 break;
 
             default:

@@ -51,7 +51,8 @@ class Connections
             static::$connections[$connectionName] = new Connection(
                 $connectionConfig['type'], $connectionConfig['host'],
                 $connectionConfig['database'], $connectionConfig['user'],
-                $connectionConfig['password']
+                $connectionConfig['password'],
+                $connectionConfig['encoding']
             );
         }
 
