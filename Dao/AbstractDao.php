@@ -801,7 +801,7 @@ abstract class AbstractDao {
         $results = $this->findBy($conds, $dependenciesAliases);
 
         if (count($results) == 0) {
-            throw new DaoException("Find one with no result");
+            throw new DaoEmptyException("Find one with no result");
         }
 
         if (count($results) > 1) {
