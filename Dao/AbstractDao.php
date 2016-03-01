@@ -767,8 +767,10 @@ abstract class AbstractDao {
     public function findBy($conds, $dependenciesAliases = array()) {
         $query = $this->createQueryBuilder(lcfirst($this->modelName));
         
-        foreach($dependenciesAliases as $aliasFrom => $aliasTo) {
-            $query->leftJoin($aliasFrom, $aliasTo);
+        foreach($dependenciesAliases as $dependance) {
+            foreach($dependance as $aliasFrom => $aliasTo) {
+                $query->leftJoin($aliasFrom, $aliasTo);
+            }
         }
         
         $where = $query->where();
@@ -785,7 +787,7 @@ abstract class AbstractDao {
 
             $first = false;
         }
-
+        
         return $this->getResult($query);
     }
 
