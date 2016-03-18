@@ -12,6 +12,7 @@ use Sebk\SmallOrmBundle\Database\Connection;
 use Sebk\SmallOrmBundle\Factory\Dao;
 use Sebk\SmallOrmBundle\QueryBuilder\QueryBuilder;
 use Sebk\SmallOrmBundle\QueryBuilder\UpdateBuilder;
+use Sebk\SmallOrmBundle\QueryBuilder\DeleteBuilder;
 
 /**
  * Abstract class to provide base dao features
@@ -200,6 +201,15 @@ abstract class AbstractDao {
     }
 
     /**
+     * Create update builder object to update table of this dao
+     * @param type $alias
+     * @return UpdateBuilder
+     */
+    public function createDeleteBuilder($alias = null) {
+        return new DeleteBuilder($this, $alias);
+    }
+
+    /**
      * Execute sql and get raw result
      * @param QueryBuilder $query
      * @return array
@@ -283,11 +293,22 @@ abstract class AbstractDao {
     }
 
     /**
-     * Get result for a query
-     * @param QueryBuilder $query
+     * Execute mass update
+     * @param UpdateBuilder $query
      * @return array
      */
-    public function executeUpdate(UpdateBuilder $query, $asCollection = false) {
+    public function executeUpdate(UpdateBuilder $query) {
+        $this->connection->execute($query->getSql(), $query->getParameters());
+
+        return $this;
+    }
+
+    /**
+     * Execute mass delete
+     * @param DeleteBuilder $query
+     * @return array
+     */
+    public function executeDelete(DeleteBuilder $query) {
         $this->connection->execute($query->getSql(), $query->getParameters());
 
         return $this;

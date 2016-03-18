@@ -171,7 +171,7 @@ class Condition
                 break;
 
             case static::TYPE_ARRAY:
-                $sql .= "(".implode(", '", $var)."')";
+                $sql .= "('".implode("', '", $var)."')";
                 break;
 
             case static::TYPE_SUBQUERY:
