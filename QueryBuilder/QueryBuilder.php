@@ -340,7 +340,7 @@ class QueryBuilder {
             return $this->forcedSql;
         }
 
-        $sql = "SELECT ";
+        $sql = "SELECT DISTINCT ";
         if ($this->isRawSelect()) {
             $sql .= $this->rawSelect;
         } else {
