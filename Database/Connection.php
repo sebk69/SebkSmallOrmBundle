@@ -68,7 +68,6 @@ class Connection
         foreach ($params as $param => $value) {
             $statement->bindValue(":".$param, $value);
         }
-
         if ($statement->execute()) {
             return $statement->fetchAll(\PDO::FETCH_ASSOC);
         } else {

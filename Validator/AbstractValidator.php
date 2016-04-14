@@ -57,10 +57,10 @@ abstract class AbstractValidator
     public function testNonEmpty($field)
     {
         $method = "get".$field;
-        if ($this->model->$method() !== null && $this->model->$method() != "") {
+        if ($this->model->$method() !== null && trim($this->model->$method()) != "") {
             return true;
         }
-
+        
         return false;
     }
 
