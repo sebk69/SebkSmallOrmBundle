@@ -95,11 +95,11 @@ abstract class AbstractValidator
             foreach ($this->model->getPrimaryKeys() as $key => $value) {
                 if ($first) {
                     $where->firstCondition($query->getFieldForCondition($key),
-                        "=", ":".$key."Primary");
+                        "<>", ":".$key."Primary");
                     $query->setParameter($key."Primary", $value);
                 } else {
                     $where->andCondition($query->getFieldForCondition($key),
-                        "=", ":".$key."Primary");
+                        "<>", ":".$key."Primary");
                     $query->setParameter($key."Primary", $value);
                 }
             }
