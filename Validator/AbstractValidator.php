@@ -84,7 +84,7 @@ abstract class AbstractValidator
             $this->model->getModelName());
         $creation = !$this->model->fromDb;
         
-        $query  = $dao->createQueryBuilder("unique");
+        $query  = $dao->createQueryBuilder("uniqueTable");
         $where  = $query->where();
         $method = "get".$field;
 
@@ -107,7 +107,7 @@ abstract class AbstractValidator
             $where->andCondition($query->getFieldForCondition($field), "=",
                 ":".$field);
             $query->setParameter($field, $this->model->$method());
-
+            
             $result = $dao->getResult($query);
         }
 
