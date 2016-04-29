@@ -302,7 +302,7 @@ class Model implements \JsonSerializable {
         }
     }
     
-    protected function getDao() {
+    public function getDao() {
         return $this->container
                     ->get("sebk_small_orm_dao")
                     ->get($this->bundle, $this->modelName);
