@@ -702,8 +702,16 @@ abstract class AbstractDao {
         }
         $sql .= implode(" AND ", $conds);
 
+        if(method_exists($model, "beforeDelete")) {
+            $model->beforeDelete();
+        }
+        
         $this->connection->execute($sql, $parms);
 
+        if(method_exists($model, "afterDelete")) {
+            $model->afterDelete();
+        }
+        
         $model->fromDb = true;
         $model->altered = false;
 
