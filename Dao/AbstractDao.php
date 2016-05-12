@@ -243,12 +243,12 @@ abstract class AbstractDao {
         foreach ($this->getFields() as $field) {
             if ($field->getModelName() == $fieldName) {
                 return $field;
-            } elseif($field->getModelName() == ucfirst($fieldName)) {
+            } elseif ($field->getModelName() == ucfirst($fieldName)) {
                 return $field;
             }
         }
-        
-        throw new DaoException("Field '$fieldName' not found in model '".$this->modelName."'");
+
+        throw new DaoException("Field '$fieldName' not found in model '" . $this->modelName . "'");
     }
 
     /**
@@ -279,7 +279,7 @@ abstract class AbstractDao {
      * @return array
      */
     public function getResult(QueryBuilder $query, $asCollection = false) {
-        foreach($this->primaryKeys as $key) {
+        foreach ($this->primaryKeys as $key) {
             $query->addOrderBy($key->getModelName());
         }
 
@@ -335,6 +335,7 @@ abstract class AbstractDao {
         $group = array();
         $savedIds = array();
         foreach ($records as $record) {
+
             $ids = $this->extractPrimaryKeysOfRecord($query, $alias, $record);
 
             if ($ids !== null) {
@@ -343,10 +344,10 @@ abstract class AbstractDao {
                         $result[] = $this->populate($query, $alias, $group, $asCollection, $groupByModels);
 
                         $group = array();
+                        break;
                     }
-
-                    $group[] = $record;
                 }
+                $group[] = $record;
 
                 $savedIds = $ids;
             } else {
@@ -375,9 +376,9 @@ abstract class AbstractDao {
             $method = "set" . $property;
             $model->$method($value);
         }
-        
-        if(!$groupByModels) {
-            if($query->getGroupByAlias() == $alias) {
+
+        if (!$groupByModels) {
+            if ($query->getGroupByAlias() == $alias) {
                 $groupByModels = true;
             }
         }
@@ -409,7 +410,7 @@ abstract class AbstractDao {
 
         return $model;
     }
-    
+
     /**
      * Load a toOneRelation
      * @param string $alias
@@ -418,21 +419,21 @@ abstract class AbstractDao {
      */
     public function loadToOne($alias, $model, $dependenciesAliases = array()) {
         $relation = $this->toOne[$alias];
-        
+
         $keys = array();
-        foreach($relation->getKeys() as $keyFrom => $keyTo) {
-            $method = "get".$keyFrom;
+        foreach ($relation->getKeys() as $keyFrom => $keyTo) {
+            $method = "get" . $keyFrom;
             $keys[$keyTo] = $model->$method();
         }
-        
+
         $results = $relation->getDao()->findBy($keys, $dependenciesAliases);
-        
-        if(count($results) == 1) {
-            $method = "set".$alias;
+
+        if (count($results) == 1) {
+            $method = "set" . $alias;
             $model->$method($results[0]);
         }
     }
-    
+
     /**
      * Load a toManyRelation
      * @param string $alias
@@ -441,14 +442,14 @@ abstract class AbstractDao {
      */
     public function loadToMany($alias, $model, $dependenciesAliases = array()) {
         $relation = $this->toMany[$alias];
-        
+
         $keys = array();
-        foreach($relation->getKeys() as $keyFrom => $keyTo) {
-            $method = "get".$keyFrom;
+        foreach ($relation->getKeys() as $keyFrom => $keyTo) {
+            $method = "get" . $keyFrom;
             $keys[$keyTo] = $model->$method();
         }
-        
-        $method = "set".$alias;
+
+        $method = "set" . $alias;
         $model->$method($relation->getDao()->findBy($keys, $dependenciesAliases));
     }
 
@@ -702,16 +703,16 @@ abstract class AbstractDao {
         }
         $sql .= implode(" AND ", $conds);
 
-        if(method_exists($model, "beforeDelete")) {
+        if (method_exists($model, "beforeDelete")) {
             $model->beforeDelete();
         }
-        
+
         $this->connection->execute($sql, $parms);
 
-        if(method_exists($model, "afterDelete")) {
+        if (method_exists($model, "afterDelete")) {
             $model->afterDelete();
         }
-        
+
         $model->fromDb = true;
         $model->altered = false;
 
@@ -723,17 +724,17 @@ abstract class AbstractDao {
      * @param \Sebk\SmallOrmBundle\Dao\Model $model
      */
     public function persist(Model $model) {
-        if(method_exists($model, "beforeSave")) {
+        if (method_exists($model, "beforeSave")) {
             $model->beforeSave();
         }
-        
+
         if ($model->fromDb) {
             $this->update($model);
         } else {
             $this->insert($model);
         }
-        
-        if(method_exists($model, "afterSave")) {
+
+        if (method_exists($model, "afterSave")) {
             $model->afterSave();
         }
     }
@@ -755,7 +756,7 @@ abstract class AbstractDao {
                 } catch (ModelException $e) {
                     
                 }
-            } elseif($value !== null) {
+            } elseif ($value !== null) {
                 try {
                     $relation = $this->getRelation($prop);
                     if ($relation instanceof ToOneRelation) {
@@ -795,13 +796,13 @@ abstract class AbstractDao {
      */
     public function findBy($conds, $dependenciesAliases = array()) {
         $query = $this->createQueryBuilder(lcfirst($this->modelName));
-        
-        foreach($dependenciesAliases as $dependance) {
-            foreach($dependance as $aliasFrom => $aliasTo) {
+
+        foreach ($dependenciesAliases as $dependance) {
+            foreach ($dependance as $aliasFrom => $aliasTo) {
                 $query->leftJoin($aliasFrom, $aliasTo);
             }
         }
-        
+
         $where = $query->where();
 
         $first = true;
@@ -816,7 +817,7 @@ abstract class AbstractDao {
 
             $first = false;
         }
-        
+
         return $this->getResult($query);
     }
 
