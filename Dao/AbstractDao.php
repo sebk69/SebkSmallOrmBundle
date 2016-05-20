@@ -750,13 +750,13 @@ abstract class AbstractDao {
 
         foreach ($stdClass as $prop => $value) {
             $method = "set" . $prop;
-            if (!is_object($value)) {
+            if (!is_object($value) && !is_array($value)) {
                 try {
                     $model->$method($value);
                 } catch (ModelException $e) {
                     
                 }
-            } elseif ($value !== null) {
+            } else {
                 try {
                     $relation = $this->getRelation($prop);
                     if ($relation instanceof ToOneRelation) {
