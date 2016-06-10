@@ -30,16 +30,16 @@ class groupByOperation
         switch (strtolower($operation)) {
             case "avg":
             case "count":
-            case "countDistinct":
-            case "groupConcat":
+            case "countdistinct":
+            case "groupconcat":
             case "max":
             case "min":
-            case "stdDev":
-            case "stdDevPop":
-            case "stdDevSamp":
+            case "stddev":
+            case "stddevpop":
+            case "stddevsamp":
             case "sum":
-            case "varPop":
-            case "varSamp":
+            case "varpop":
+            case "varsamp":
                 $this->field     = $field;
                 $this->modelAlias     = $modelAlias;
                 $this->operation = $operation;
@@ -71,10 +71,10 @@ class groupByOperation
             case "count":
                 return "COUNT(".$this->modelAlias.".".$this->field.") AS ".$this->operationAlias;
                 break;
-            case "countDistinct":
+            case "countdistinct":
                 return "COUNT(DISTINCT ".$this->modelAlias.".".$this->field.") AS ".$this->operationAlias;
                 break;
-            case "groupConcat":
+            case "groupconcat":
                 return "GROUP_CONCAT(".$this->modelAlias.".".$this->field.") AS ".$this->operationAlias;
                 break;
             case "max":
@@ -83,22 +83,22 @@ class groupByOperation
             case "min":
                 return "MIN(".$this->modelAlias.".".$this->field.") AS ".$this->operationAlias;
                 break;
-            case "stdDev":
+            case "stddev":
                 return "STDDEV(".$this->modelAlias.".".$this->field.") AS ".$this->operationAlias;
                 break;
-            case "stdDevPop":
+            case "stddevPop":
                 return "STDDEV_POP(".$this->modelAlias.".".$this->field.") AS ".$this->operationAlias;
                 break;
-            case "stdDevSamp":
+            case "stddevSamp":
                 return "STDDEV_SAMP(".$this->modelAlias.".".$this->field.") AS ".$this->operationAlias;
                 break;
             case "sum":
                 return "SUM(".$this->modelAlias.".".$this->field.") AS ".$this->operationAlias;
                 break;
-            case "varPop":
+            case "varpop":
                 return "VAR_POP(".$this->modelAlias.".".$this->field.") AS ".$this->operationAlias;
                 break;
-            case "varSamp":
+            case "varsamp":
                 return "VAR_SAMP(".$this->modelAlias.".".$this->field.") AS ".$this->operationAlias;
                 break;
         }
