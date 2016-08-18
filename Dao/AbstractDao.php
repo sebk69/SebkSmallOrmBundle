@@ -219,6 +219,16 @@ abstract class AbstractDao {
     }
 
     /**
+     * Execute raw sql and get result
+     * @param $sql
+     * @param $parameters
+     * @return array
+     */
+    public function getRawQueryResult($sql, $parameters = null) {
+        return $this->connection->execute($sql, $parameters);
+    }
+
+    /**
      * Has field
      * @param string $fieldName
      * @return boolean
