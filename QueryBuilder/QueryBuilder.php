@@ -28,6 +28,7 @@ class QueryBuilder {
     protected $rawSelect = null;
     protected $rawJoin = "";
     protected $rawWhere = null;
+    protected $rawOrderBy = null;
 
     /**
      * Construct QueryBuilder
@@ -331,6 +332,12 @@ class QueryBuilder {
         return $this;
     }
 
+    public function setRawOrderBy($orderByClause) {
+        $this->rawOrderBy = $orderByClause;
+
+        return $this;
+    }
+
     /**
      * Return sql statement for this query
      * @return string
@@ -378,7 +385,9 @@ class QueryBuilder {
             $sql .= " GROUP BY " . implode(", ", $groupBy);
         }
 
-        if (count($this->orderBy)) {
+        if($this->rawOrderBy != null) {
+            $sql .= " ORDER BY ".$this->rawOrderBy;
+        } else if (count($this->orderBy)) {
             $sql .= " ORDER BY ";
             $orderBy = array();
             foreach ($this->orderBy as $orderByField) {
