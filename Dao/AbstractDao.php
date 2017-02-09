@@ -777,11 +777,9 @@ abstract class AbstractDao {
                             $objects[$key] = $relation->getDao()->makeModelFromStdClass($modelStdClass);
                         }
                         $model->$method($objects);
-                    } else {
-                        $model->$method($value);
                     }
                 } catch (DaoException $e) {
-                    
+                    $model->$method($value);
                 }
             }
         }
