@@ -777,6 +777,8 @@ abstract class AbstractDao {
                             $objects[$key] = $relation->getDao()->makeModelFromStdClass($modelStdClass);
                         }
                         $model->$method($objects);
+                    } else {
+                        $model->$method($value);
                     }
                 } catch (DaoException $e) {
                     
@@ -832,9 +834,10 @@ abstract class AbstractDao {
     }
 
     /**
-     * 
-     * @param array $conds
+     * @param $conds
+     * @param array $dependenciesAliases
      * @return Model
+     * @throws DaoEmptyException
      * @throws DaoException
      */
     public function findOneBy($conds, $dependenciesAliases = array()) {
