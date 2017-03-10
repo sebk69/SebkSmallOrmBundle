@@ -31,7 +31,7 @@ class Field
      */
     public function getDbName()
     {
-        return $this->dbName;
+        return "`".$this->dbName."`";
     }
 
     /**
