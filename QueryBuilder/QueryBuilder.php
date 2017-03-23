@@ -29,6 +29,7 @@ class QueryBuilder {
     protected $rawJoin = "";
     protected $rawWhere = null;
     protected $rawOrderBy = null;
+    protected $rawGroupBy = null;
 
     /**
      * Construct QueryBuilder
@@ -159,6 +160,16 @@ class QueryBuilder {
     }
 
     /**
+     * @param $rawGroupBy
+     * @return $this
+     */
+    public function setRawGroupBy($rawGroupBy) {
+        $this->rawGroupBy = $rawGroupBy;
+
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function getGroupByAlias() {
@@ -173,10 +184,12 @@ class QueryBuilder {
     }
 
     /**
-     * @param string $alias
-     * @param string $field
-     * @param string $operation
-     * @return \Sebk\SmallOrmBundle\QueryBuilder\QueryBuilder
+     * @param $operation
+     * @param $modelAlias
+     * @param $field
+     * @param $operationAlias
+     * @return $this
+     * @throws QueryBuilderException
      */
     public function addGroupByOperation($operation, $modelAlias, $field, $operationAlias) {
         if($modelAlias == $this->from->getAlias()) {
@@ -369,7 +382,7 @@ class QueryBuilder {
             $sql .= $this->where->getSql();
         }
 
-        if ($this->groupBy !== null) {
+        if ($this->groupBy !== null && $this->rawGroupBy === null) {
             $groupBy = array();
             if ($this->groupBy == $this->from->getAlias()) {
                 foreach ($this->from->getDao()->getPrimaryKeys() as $key) {
@@ -383,6 +396,8 @@ class QueryBuilder {
 
 
             $sql .= " GROUP BY " . implode(", ", $groupBy);
+        } elseif ($this->rawGroupBy !== null) {
+            $sql .= " GROUP BY " . $this->rawGroupBy;
         }
 
         if($this->rawOrderBy != null) {
