@@ -29,7 +29,7 @@ class ConfigCollection
     /**
      * Load configs for all bundles
      */
-    public function loadConfigs()
+    public function loadConfigs($withoutVendor = true)
     {
         $config = $this->container->getParameter("sebk_small_orm.bundles");
 
@@ -52,7 +52,7 @@ class ConfigCollection
             }
         }
 
-        throw new TableNotFoundException("La table ".$dbTableName." n'est dans aucun bundle");
+        throw new TableNotFoundException("The table ".$dbTableName." is not in any bundle");
     }
 
     /**

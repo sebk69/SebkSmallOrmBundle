@@ -211,29 +211,37 @@ class [modelName] extends Model
 
         // To one relations
         foreach ($this->dbGateway->getToOnes($dbTableName) as $toOne) {
-            $toBundle = $configCollection->getTableBundle($toOne["toTable"]);
-            $output .= '            ->addToOne("' . static::camelize($toOne["relation"], true) .
-                '", ["' . static::camelize($toOne["fromField"], true) . '" => "' . static::camelize($toOne["toField"], true) . '"], "' . $this->getDaoClassName($toOne["toTable"]) . '"';
-            if($toBundle == $this->bundle) {
-                $output .= ');
+            try {
+                $toBundle = $configCollection->getTableBundle($toOne["toTable"]);
+                $output .= '            ->addToOne("' . static::camelize($toOne["relation"], true) .
+                    '", ["' . static::camelize($toOne["fromField"], true) . '" => "' . static::camelize($toOne["toField"], true) . '"], "' . $this->getDaoClassName($toOne["toTable"]) . '"';
+                if ($toBundle == $this->bundle) {
+                    $output .= ')
 ';
-            } else {
-                $output .= ', "'.$toBundle.'");
+                } else {
+                    $output .= ', "' . $toBundle . '")
 ';
+                }
+            } catch(TableNotFoundException $e) {
+
             }
         }
 
         // To many relations
         foreach ($this->dbGateway->getToManys($dbTableName) as $toMany) {
-            $toBundle = $configCollection->getTableBundle($toMany["toTable"]);
-            $output .= '            ->addToMany("'.static::camelize($toMany["toTable"], true, true).
-                '", ["'.static::camelize($toMany["toField"], true).'" => "'.static::camelize($toMany["fromField"], true).'"], "'.$this->getDaoClassName($toMany["toTable"]).'"';
-            if($toBundle == $this->bundle) {
-                $output .= ');
+            try {
+                $toBundle = $configCollection->getTableBundle($toMany["toTable"]);
+                $output .= '            ->addToMany("'.static::camelize($toMany["toTable"], true, true).
+                    '", ["'.static::camelize($toMany["toField"], true).'" => "'.static::camelize($toMany["fromField"], true).'"], "'.$this->getDaoClassName($toMany["toTable"]).'"';
+                if($toBundle == $this->bundle) {
+                    $output .= ');
 ';
-            } else {
-                $output .= ', "'.$toBundle.'");
+                } else {
+                    $output .= ', "'.$toBundle.'");
 ';
+                }
+            } catch(TableNotFoundException $e) {
+
             }
         }
 

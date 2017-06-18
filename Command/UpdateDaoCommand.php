@@ -37,7 +37,8 @@ class UpdateDaoCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         // get first bundle as default
-        foreach($this->getContainer()->getParameter("sebk_small_orm.bundles") as $defaultBundle => $parms) {
+        $bundlesConfig = $this->getContainer()->getParameter("sebk_small_orm.bundles");
+        foreach($bundlesConfig as $defaultBundle => $parms) {
             break;
         }
 
@@ -60,6 +61,9 @@ class UpdateDaoCommand extends ContainerAwareCommand
         $generatorConfigs->loadConfigs();
 
         foreach($generatorConfigs->getAllConfiguredTables() as $record) {
+            if(isset($bundlesConfig[$record["bundle"]]["vendor"]) && $bundlesConfig[$record["bundle"]]["vendor"] == "true") {
+                continue;
+            }
             $this->updateTable($connectionName, $record["bundle"], $record["table"]);
         }
     }

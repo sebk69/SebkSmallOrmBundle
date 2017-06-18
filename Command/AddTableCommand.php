@@ -86,9 +86,13 @@ class AddTableCommand extends ContainerAwareCommand
     {
         $daoGenrator = $this->getContainer()->get("sebk_small_orm_generator");
         $daoGenrator->setParameters($connectionName, $bundle);
-        $daoGenrator->recomputeFilesForTable($dbTableName);
+        try {
+            $daoGenrator->recomputeFilesForTable($dbTableName);
 
-        $config = new Config($bundle, $connectionName, $this->getContainer());
-        $config->addTable($dbTableName);
+            $config = new Config($bundle, $connectionName, $this->getContainer());
+            $config->addTable($dbTableName);
+        } catch(\Exception $e) {
+
+        }
     }
 }
