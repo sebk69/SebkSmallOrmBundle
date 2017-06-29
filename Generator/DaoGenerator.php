@@ -62,7 +62,7 @@ class [modelName] extends Model
      * @param $bundle
      * @return $this
      */
-    public function setParameters($connectionName, string $bundle)
+    public function setParameters($connectionName, $bundle)
     {
         $this->connectionName = $connectionName;
         $this->dbGateway = new DbGateway($this->connections->get($connectionName));
