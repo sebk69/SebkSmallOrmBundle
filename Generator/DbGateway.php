@@ -1,9 +1,8 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: seb
- * Date: 16/05/17
- * Time: 22:36
+ * This file is a part of SebkSmallOrmBundle
+ * Copyright 2015-2017 - Sébastien Kus
+ * Under GNU GPL V3 licence
  */
 
 namespace Sebk\SmallOrmBundle\Generator;
