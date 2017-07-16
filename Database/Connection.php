@@ -31,17 +31,24 @@ class Connection
 
         switch ($dbType) {
             case "mysql":
+                // Connect to database
                 $connectionString = "mysql:dbname=$database;host=$host;charset=$encoding";
+                try {
+                    $this->pdo = new \PDO($connectionString, $user, $password);
+                } catch (\PDOException $e) {
+                    // Create database if not exists
+                    $connectionString = "mysql:host=$host;charset=$encoding";
+                    try {
+                        $this->pdo = new \PDO($connectionString, $user, $password);
+                    } catch (\PDOException $e) {
+                        throw new ConnectionException($e->getMessage());
+                    }
+                    $this->execute("create database `$database`;use `$database`;");
+                }
                 break;
 
             default:
                 throw new ConnectionException("Database type is not developped for now");
-        }
-
-        try {
-            $this->pdo = new \PDO($connectionString, $user, $password);
-        } catch (\PDOException $e) {
-            throw new ConnectionException($e->getMessage());
         }
     }
 
