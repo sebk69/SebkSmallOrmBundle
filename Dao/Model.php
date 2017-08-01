@@ -13,6 +13,8 @@ namespace Sebk\SmallOrmBundle\Dao;
  */
 class Model implements \JsonSerializable {
 
+    const FIELD_NOT_PERSIST = "FIELD_NOT_PERSIST";
+
     private $modelName;
     private $bundle;
     protected $container;

@@ -662,8 +662,10 @@ abstract class AbstractDao {
         $sql = "UPDATE " . $this->connection->getDatabase() . "." . $this->dbTableName . " set ";
         $fields = $model->toArray(false, true);
         foreach ($fields as $key => $val) {
-            $queryFields[$key] = $this->getDbNameFromModelName($key) . " = :$key";
-            $parms[$key] = $val;
+            if($val != Model::FIELD_NOT_PERSIST) {
+                $queryFields[$key] = $this->getDbNameFromModelName($key) . " = :$key";
+                $parms[$key] = $val;
+            }
         }
         $sql .= implode(", ", $queryFields);
 
