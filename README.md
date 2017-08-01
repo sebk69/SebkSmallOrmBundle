@@ -35,7 +35,8 @@ public function registerBundles()
         new Sebk\SmallOrmBundle\SebkSmallOrmBundle(),
     );
 }
+```
 
 ## Documentation
 
-See documentation at http://www.iceberg-linux.net/smallorm.php
+See [documentation]: http://www.iceberg-linux.net/smallorm.php
