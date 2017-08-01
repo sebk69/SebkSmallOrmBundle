@@ -18,7 +18,7 @@ Add repository to your `composer.json` file.
        ]
 ```
 
-Add [`Sebk/SmallOrmBundle`](https://packagist.org/packages/lexik/jwt-authentication-bundle)
+Add [`Sebk/SmallOrmBundle`]
 to your `composer.json` file.
 
 ```
@@ -38,4 +38,4 @@ public function registerBundles()
 
 ## Documentation
 
-See documentation at http://www.iceberg-linux.net/smallorm.php(http://www.iceberg-linux.net/smallorm.php)
+See documentation at http://www.iceberg-linux.net/smallorm.php
