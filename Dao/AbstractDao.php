@@ -661,8 +661,9 @@ abstract class AbstractDao {
 
         $sql = "UPDATE " . $this->connection->getDatabase() . "." . $this->dbTableName . " set ";
         $fields = $model->toArray(false, true);
+
         foreach ($fields as $key => $val) {
-            if($val != Model::FIELD_NOT_PERSIST) {
+            if($val !== Model::FIELD_NOT_PERSIST) {
                 $queryFields[$key] = $this->getDbNameFromModelName($key) . " = :$key";
                 $parms[$key] = $val;
             }
@@ -680,6 +681,7 @@ abstract class AbstractDao {
             $parms[$originalPk . "OriginalPk"] = $originalValue;
         }
         $sql .= implode(" AND ", $conds);
+
 
         $this->connection->execute($sql, $parms);
 
