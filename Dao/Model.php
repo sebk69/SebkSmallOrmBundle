@@ -352,6 +352,18 @@ class Model implements \JsonSerializable {
     public function persist()
     {
         $this->getDao()->persist($this);
+
+        return $this;
+    }
+
+    /**
+     *
+     */
+    public function delete()
+    {
+        $this->getDao()->delete($this);
+
+        return $this;
     }
 
     /**
