@@ -15,6 +15,7 @@ class Connection
 {
     protected $pdo;
     protected $database;
+    protected $transactionInUse = false;
 
     /**
      * Construct and open connection
@@ -81,6 +82,68 @@ class Connection
             $errInfo = $statement->errorInfo();
             throw new ConnectionException("Fail to exectue request : SQLSTATE[".$errInfo[0]."][".$errInfo[1]."] ".$errInfo[2]);
         }
+    }
+
+    /**
+     * Start transaction
+     * @return $this
+     * @throws TransactionException
+     */
+    public function startTransaction()
+    {
+        if($this->getTransactionInUse()) {
+            throw new TransactionException("Transaction already started");
+        }
+
+        $this->execute("START TRANSACTION");
+        $this->transactionInUse = true;
+
+        return $this;
+    }
+
+    /**
+     * Return true if transaction in use
+     * @return bool
+     */
+    public function getTransactionInUse()
+    {
+        return $this->transactionInUse;
+    }
+
+    /**
+     * Commit transaction
+     * @return $this
+     * @throws TransactionException
+     */
+    public function commit()
+    {
+        if(!$this->getTransactionInUse()) {
+            throw new TransactionException("Transaction not started");
+        }
+
+        $this->execute("COMMIT");
+
+        $this->transactionInUse = false;
+
+        return $this;
+    }
+
+    /**
+     * Rollback transaction
+     * @return $this
+     * @throws TransactionException
+     */
+    public function rollback()
+    {
+        if(!$this->getTransactionInUse()) {
+            throw new TransactionException("Transaction not started");
+        }
+
+        $this->execute("ROLLBACK");
+
+        $this->transactionInUse = false;
+
+        return $this;
     }
 
     /**

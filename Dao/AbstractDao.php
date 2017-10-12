@@ -44,6 +44,15 @@ abstract class AbstractDao {
     }
 
     /**
+     * Get connection
+     * @return Connection
+     */
+    public function getConnection()
+    {
+        return $this->connection;
+    }
+
+    /**
      * @return string
      */
     public function getModelName() {
