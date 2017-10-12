@@ -348,6 +348,7 @@ class Model implements \JsonSerializable {
 
     /**
      * Persist this model
+     * @return $this
      */
     public function persist()
     {
@@ -357,7 +358,8 @@ class Model implements \JsonSerializable {
     }
 
     /**
-     *
+     * Delete this model
+     * @return $this
      */
     public function delete()
     {
@@ -368,6 +370,7 @@ class Model implements \JsonSerializable {
 
     /**
      * Get validator
+     * @return mixed
      */
     public function getValidator()
     {
