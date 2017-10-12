@@ -18,6 +18,7 @@ class Model implements \JsonSerializable {
     private $modelName;
     private $bundle;
     protected $container;
+    protected $validator;
     private $primaryKeys = array();
     private $originalPrimaryKeys = null;
     private $fields = array();
@@ -33,7 +34,8 @@ class Model implements \JsonSerializable {
      * @param array $primaryKeys
      * @param array $fields
      */
-    public function __construct($modelName, $bundle, $primaryKeys, $fields, $toOnes, $toManys, $container) {
+    public function __construct($modelName, $bundle, $primaryKeys, $fields, $toOnes, $toManys, $container)
+    {
         $this->modelName = $modelName;
         $this->bundle = $bundle;
         $this->container = $container;
@@ -58,25 +60,28 @@ class Model implements \JsonSerializable {
     /**
      * @return string
      */
-    public function getModelName() {
+    public function getModelName()
+    {
         return $this->modelName;
     }
 
     /**
      * @return string
      */
-    public function getBundle() {
+    public function getBundle()
+    {
         return $this->bundle;
     }
 
     /**
      * Magic method to access getters and setters
-     * @param string $method
-     * @param array $args
-     * @return mixed
-     * @throws \ModelException
+     * @param $method
+     * @param $args
+     * @return $this|mixed
+     * @throws ModelException
      */
-    public function __call($method, $args) {
+    public function __call($method, $args)
+    {
         $type = substr($method, 0, 3);
         $name = lcfirst(substr($method, 3));
         $typeField = $this->getFieldType($name);
@@ -115,11 +120,20 @@ class Model implements \JsonSerializable {
         }
     }
 
-    public function setOriginalPrimaryKeys() {
+    /**
+     * Set original primary key
+     */
+    public function setOriginalPrimaryKeys()
+    {
         $this->originalPrimaryKeys = $this->primaryKeys;
     }
 
-    public function getOriginalPrimaryKeys() {
+    /**
+     * Get original primary key
+     * @return string
+     */
+    public function getOriginalPrimaryKeys()
+    {
         return $this->originalPrimaryKeys;
     }
 
@@ -129,7 +143,8 @@ class Model implements \JsonSerializable {
      * @return string
      * @throws \ModelException
      */
-    public function getFieldType($field) {
+    public function getFieldType($field)
+    {
         if (array_key_exists($field, $this->primaryKeys)) {
             return "primaryKeys";
         }
@@ -150,19 +165,21 @@ class Model implements \JsonSerializable {
     }
 
     /**
-     *
+     * Get list of primary keys
      * @return array
      */
-    public function getPrimaryKeys() {
+    public function getPrimaryKeys()
+    {
         return $this->primaryKeys;
     }
 
     /**
-     *
+     * Convert model to array
      * @param boolean $dependecies
      * @return array
      */
-    public function toArray($dependecies = true, $onlyFields = false) {
+    public function toArray($dependecies = true, $onlyFields = false)
+    {
         $result = array();
 
         foreach ($this->primaryKeys as $key => $value) {
@@ -224,10 +241,11 @@ class Model implements \JsonSerializable {
     }
 
     /**
-     * 
+     * Json serialisation of model
      * @return array
      */
-    public function jsonSerialize() {
+    public function jsonSerialize()
+    {
         if (is_array($this->toArray())) {
             return $this->toUtf8Array($this->toArray());
         } else {
@@ -236,11 +254,12 @@ class Model implements \JsonSerializable {
     }
 
     /**
-     * 
+     * Serialize model to an array (convert strings to utf8)
      * @param array $array
      * @return array
      */
-    protected function toUtf8Array($array) {
+    protected function toUtf8Array($array)
+    {
         foreach ($array as $key => $cell) {
             if (is_array($cell)) {
                 $array[$key] = $this->toUtf8Array($cell);
@@ -257,10 +276,12 @@ class Model implements \JsonSerializable {
     }
 
     /**
+     * Convert a string to utf8 if necessary
      * @param string $str
      * @return string
      */
-    protected function toUtf8String($str) {
+    protected function toUtf8String($str)
+    {
         if (mb_detect_encoding($str, 'UTF-8', true) === false) {
             return utf8_encode($str);
         }
@@ -270,10 +291,13 @@ class Model implements \JsonSerializable {
 
     /**
      * Load a toOne relation if not loaded
-     * @param type $alias
+     * @param $alias
+     * @param array $dependenciesAliases
+     * @return Model
      * @throws DaoException
      */
-    public function loadToOne($alias, $dependenciesAliases = array()) {
+    public function loadToOne($alias, $dependenciesAliases = array())
+    {
         if (!array_key_exists($alias, $this->toOnes)) {
             throw new DaoException("Field '$alias' does not exists (loading to one relation");
         }
@@ -284,14 +308,19 @@ class Model implements \JsonSerializable {
                     ->get($this->bundle, $this->modelName)
                     ->loadToOne($alias, $this, $dependenciesAliases);
         }
+
+        return $this->toOnes[$alias];
     }
     
     /**
      * Load a toMany relation if not loaded
-     * @param type $alias
+     * @param $alias
+     * @param array $dependenciesAliases
+     * @return Array
      * @throws DaoException
      */
-    public function loadToMany($alias, $dependenciesAliases = array()) {
+    public function loadToMany($alias, $dependenciesAliases = array())
+    {
         if (!array_key_exists($alias, $this->toManys)) {
             throw new DaoException("Field '$alias' does not exists (loading to many relation");
         }
@@ -302,11 +331,50 @@ class Model implements \JsonSerializable {
                     ->get($this->bundle, $this->modelName)
                     ->loadToMany($alias, $this, $dependenciesAliases);
         }
+
+        return $this->toManys[$alias];
     }
-    
-    public function getDao() {
+
+    /**
+     * Get the DAO of model
+     * @return mixed
+     */
+    public function getDao()
+    {
         return $this->container
                     ->get("sebk_small_orm_dao")
                     ->get($this->bundle, $this->modelName);
+    }
+
+    /**
+     * Persist this model
+     */
+    public function persist()
+    {
+        $this->getDao()->persist($this);
+
+        return $this;
+    }
+
+    /**
+     *
+     */
+    public function delete()
+    {
+        $this->getDao()->delete($this);
+
+        return $this;
+    }
+
+    /**
+     * Get validator
+     */
+    public function getValidator()
+    {
+        if($this->validator === null) {
+            $this->validator = $this->container->get("sebk_small_orm_validator")->get($this);
+        }
+
+        return $this->validator;
     }
 }
