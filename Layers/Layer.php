@@ -169,6 +169,7 @@ class Layer
             if(substr($scriptFilename, 0, 1) != ".") {
                 // if file is not hidden, execute it
                 $sql = file_get_contents($scriptsPath . "/" . $scriptFilename);
+                echo "Execute script : ".$scriptFilename."\n";
                 $this->connection->execute($sql);
             }
         }
