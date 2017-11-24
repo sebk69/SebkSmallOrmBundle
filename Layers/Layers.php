@@ -56,7 +56,7 @@ class Layers
             $this->layers[$bundle] = [];
             foreach($layersNames as $layerName) {
                 if(substr($layerName, 0, 1) != ".") {
-                    $this->layers[$bundle][] = new Layer($layersRootPath, $layerName, $this->container->get("sebk_small_orm_connections"));
+                    $this->layers[$bundle][] = new Layer($layersRootPath, $layerName, $this->container->get("sebk_small_orm_connections"), $this->container);
                 }
             }
         }
@@ -106,8 +106,8 @@ class Layers
                         }
                     }
 
-                    // execute layer if dependencies are satisfied
-                    if ($depSatisfied) {
+                    // execute layer if dependencies are satisfied and required parameters
+                    if ($depSatisfied && $layer->getRequiredParametersSatisfied()) {
                         echo "Execute layer ".$layer->getName()."...";
                         if ($layer->executeScripts()) {
                             $layer->getConnection()->execute("INSERT INTO `_small_orm_layers` (`bundle`, `layer`) VALUES(:bundle, :layer);",
@@ -128,14 +128,16 @@ class Layers
         $report = false;
         foreach ($this->layers as $bundle => $bundleLayers) {
             foreach ($bundleLayers as $layer) {
-                if(!$report) {
-                    $report = true;
-                    echo "LAYER EXECUTE REPORT\n";
-                    echo "====================\n\n";
-                    echo "Some layers have not be executed because unresolved dependencies :\n\n";
-                }
+                if($layer->getRequiredParametersSatisfied()) {
+                    if (!$report) {
+                        $report = true;
+                        echo "LAYER EXECUTE REPORT\n";
+                        echo "====================\n\n";
+                        echo "Some layers have not be executed because unresolved dependencies :\n\n";
+                    }
 
-                echo "-> Layer '".$layer->getName()."' of bundle '".$bundle."'\n";
+                    echo "-> Layer '" . $layer->getName() . "' of bundle '" . $bundle . "'\n";
+                }
             }
         }
         echo "\n";

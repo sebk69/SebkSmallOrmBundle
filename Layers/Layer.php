@@ -16,6 +16,7 @@ class Layer
     // Allowed parameters
     const CONNECTION_PARAMETER = "connection";
     const DEPENDS_PARAMETER = "depends";
+    const REQUIRED_PARAMETER = "required-parameters";
 
     // Properties
     protected $layerRootPath;
@@ -24,17 +25,20 @@ class Layer
     protected $configFilePath;
     protected $connection;
     protected $dependencies = [];
+    protected $container;
+    protected $requiredParametersSatisfied;
 
     /**
      * Layer constructor.
      * @param $layerRootPath
      * @param $layerName
      */
-    public function __construct($layerRootPath, $layerName, Connections $connectionsFactory)
+    public function __construct($layerRootPath, $layerName, Connections $connectionsFactory, $container)
     {
         $this->layerRootPath = $layerRootPath;
         $this->layerName = $layerName;
         $this->connectionsFactory = $connectionsFactory;
+        $this->container = $container;
         $this->configFilePath = $this->layerRootPath."/".$this->layerName."/config.yml";
         $this->loadLayer();
     }
@@ -64,6 +68,16 @@ class Layer
     public function getConnection()
     {
         return $this->connection;
+    }
+
+    /**
+     * Get if required satisfied.
+     * If the config is not loaded, return null
+     * @return mixed
+     */
+    public function getRequiredParametersSatisfied()
+    {
+        return $this->requiredParametersSatisfied;
     }
 
     /**
@@ -110,6 +124,21 @@ class Layer
                 }
             }
         }
+
+        $this->requiredParametersSatisfied = true;
+        if(isset($config[static::REQUIRED_PARAMETER])) {
+            foreach ($config[static::REQUIRED_PARAMETER] as $parameter => $value) {
+                try {
+                    $realValue = $this->container->getParameter($parameter);
+                } catch(\Exception $e) {
+                    throw new LayerUnknownParameter("The parameter '$parameter' not found in parameters.yml");
+                }
+
+                if($realValue != $value) {
+                    $this->requiredParametersSatisfied = false;
+                }
+            }
+        }
     }
 
     /**
@@ -138,7 +167,14 @@ class Layer
                 // Check depends parameter
                 case static::DEPENDS_PARAMETER:
                     if(!is_array($configValue)) {
-                        throw new LayerSyntaxError("The value for 'depends' parameter must be an array$layerPath");
+                        throw new LayerSyntaxError("The value for '".static::DEPENDS_PARAMETER."' parameter must be an array$layerPath");
+                    }
+                    break;
+
+                // Check required parameters
+                case static::REQUIRED_PARAMETER:
+                    if(!is_array($configValue)) {
+                        throw new LayerSyntaxError("Missing entries in paramter '".static::REQUIRED_PARAMETER."'$layerPath");
                     }
                     break;
 
