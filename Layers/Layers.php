@@ -108,7 +108,7 @@ class Layers
 
                     // execute layer if dependencies are satisfied and required parameters
                     if ($depSatisfied && $layer->getRequiredParametersSatisfied()) {
-                        echo "Execute layer ".$layer->getName()."...";
+                        echo "Execute layer ".$layer->getName()."...\n";
                         if ($layer->executeScripts()) {
                             $layer->getConnection()->execute("INSERT INTO `_small_orm_layers` (`bundle`, `layer`) VALUES(:bundle, :layer);",
                                 ["bundle" => $bundle, "layer" => $layer->getName()]);
