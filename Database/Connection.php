@@ -16,6 +16,11 @@ class Connection
     protected $pdo;
     protected $database;
     protected $transactionInUse = false;
+    protected $dbType;
+    protected $host;
+    protected $user;
+    protected $password;
+    protected $encoding;
 
     /**
      * Construct and open connection
@@ -29,22 +34,40 @@ class Connection
     public function __construct($dbType, $host, $database, $user, $password, $encoding)
     {
         $this->database = $database;
+        $this->dbType = $dbType;
+        $this->host = $host;
+        $this->user = $user;
+        $this->password = $password;
+        $this->encoding = $encoding;
 
-        switch ($dbType) {
+        $this->connect();
+    }
+
+    /**
+     * Connect to database, use existing connection if exists
+     * @throws ConnectionException
+     */
+    protected function connect()
+    {
+        switch ($this->dbType) {
             case "mysql":
                 // Connect to database
-                $connectionString = "mysql:dbname=$database;host=$host;charset=$encoding";
+                $connectionString = "mysql:dbname=$this->database;host=$this->host;charset=$this->encoding";
                 try {
-                    $this->pdo = new \PDO($connectionString, $user, $password);
+                    $this->pdo = new \PDO($connectionString, $this->user, $this->password);
                 } catch (\PDOException $e) {
                     // Create database if not exists
-                    $connectionString = "mysql:host=$host;charset=$encoding";
+                    $connectionString = "mysql:host=$this->host;charset=$this->encoding";
                     try {
-                        $this->pdo = new \PDO($connectionString, $user, $password);
+                        $this->pdo = new \PDO($connectionString, $this->user, $this->password);
                     } catch (\PDOException $e) {
                         throw new ConnectionException($e->getMessage());
                     }
-                    $this->execute("create database `$database`;use `$database`;");
+                    $statement = $this->pdo->prepare("create database `$this->database`;use `$this->database`;");
+                    if(!$statement->execute()) {
+                        $errInfo = $statement->errorInfo();
+                        throw new ConnectionException("Fail to exectue request : SQLSTATE[".$errInfo[0]."][".$errInfo[1]."] ".$errInfo[2]);
+                    }
                 }
                 break;
 
@@ -54,7 +77,7 @@ class Connection
     }
 
     /**
-     *
+     * Get database
      * @return string
      */
     public function getDatabase()
@@ -64,12 +87,13 @@ class Connection
 
     /**
      * Execute sql instruction
-     * @param string $sql
+     * @param $sql
      * @param array $params
-     * @return array
+     * @param bool $retry
+     * @return mixed
      * @throws ConnectionException
      */
-    public function execute($sql, $params = array())
+    public function execute($sql, $params = array(), $retry = false)
     {
         $statement = $this->pdo->prepare($sql);
 
@@ -80,13 +104,19 @@ class Connection
             return $statement->fetchAll(\PDO::FETCH_ASSOC);
         } else {
             $errInfo = $statement->errorInfo();
-            throw new ConnectionException("Fail to exectue request : SQLSTATE[".$errInfo[0]."][".$errInfo[1]."] ".$errInfo[2]);
+            if($errInfo[0] == "HY000" && $errInfo[1] == "2006" && !$retry) {
+                $this->connect();
+                return $this->execute($sql, $params, true);
+            } else {
+                throw new ConnectionException("Fail to exectue request : SQLSTATE[" . $errInfo[0] . "][" . $errInfo[1] . "] " . $errInfo[2]);
+            }
         }
     }
 
     /**
      * Start transaction
      * @return $this
+     * @throws ConnectionException
      * @throws TransactionException
      */
     public function startTransaction()
@@ -113,6 +143,7 @@ class Connection
     /**
      * Commit transaction
      * @return $this
+     * @throws ConnectionException
      * @throws TransactionException
      */
     public function commit()
@@ -131,6 +162,7 @@ class Connection
     /**
      * Rollback transaction
      * @return $this
+     * @throws ConnectionException
      * @throws TransactionException
      */
     public function rollback()
