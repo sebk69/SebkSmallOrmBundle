@@ -2,7 +2,7 @@
 
 /**
  * This file is a part of SebkSmallOrmBundle
- * Copyright 2015 - Sébastien Kus
+ * Copyright 2015-2018 - Sébastien Kus
  * Under GNU GPL V3 licence
  */
 
@@ -799,6 +799,10 @@ abstract class AbstractDao {
 
         if ($setOriginalKeys) {
             $model->setOriginalPrimaryKeys();
+        }
+
+        if(isset($stdClass->backup)) {
+            $model->setBackup($stdClass->backup);
         }
 
         if (isset($stdClass->fromDb)) {

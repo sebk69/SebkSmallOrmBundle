@@ -2,7 +2,7 @@
 
 /**
  * This file is a part of SebkSmallOrmBundle
- * Copyright 2015 - Sébastien Kus
+ * Copyright 2015-2018 - Sébastien Kus
  * Under GNU GPL V3 licence
  */
 
@@ -27,6 +27,7 @@ class Model implements \JsonSerializable {
     private $metadata = array();
     public $fromDb = false;
     public $altered = false;
+    private $backup = null;
 
     /**
      * Construct model
@@ -223,18 +224,22 @@ class Model implements \JsonSerializable {
                     $result[$key] = array();
                 }
             }
+        }
 
-            foreach ($this->metadata as $key => $value) {
-                if ($value instanceof ModelCollection || $value instanceof Model) {
-                    $result[$key] = $value->toArray();
-                } else {
-                    $result[$key] = $value;
-                }
+        foreach ($this->metadata as $key => $value) {
+            if ($value instanceof ModelCollection || $value instanceof Model) {
+                $result[$key] = $value->toArray();
+            } else {
+                $result[$key] = $value;
             }
+        }
 
-            if (!$onlyFields) {
-                $result["fromDb"] = $this->fromDb;
-            }
+        if (!$onlyFields) {
+            $result["fromDb"] = $this->fromDb;
+        }
+
+        if($this->backup !== null) {
+            $result["backup"] = get_object_vars($this->backup);
         }
 
         return $result;
@@ -379,5 +384,68 @@ class Model implements \JsonSerializable {
         }
 
         return $this->validator;
+    }
+
+    /**
+     * Backup values of model (also metadata)
+     * @param bool $deeply
+     */
+    public function backup($deeply = false)
+    {
+        // save object
+        $json = json_encode($this->toArray(false));
+        $backup = json_decode($json);
+        if(isset($backup->backup)) {
+            unset($backup->backup);
+        }
+        $this->backup = $backup;
+
+        // save dependencies
+        if($deeply) {
+            foreach ($this->toOnes as $key => $model) {
+                if($model !== null) {
+                    $model->backup();
+                }
+            }
+
+            foreach ($this->toManys as $key => $array) {
+                if ($array !== null) {
+                    foreach ($array as $model) {
+                        $model->backup();
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Get backup
+     * @return null
+     * @throws ModelException
+     */
+    public function getBackup()
+    {
+        if(!is_object($this->backup)) {
+            throw new ModelException("No backup to get");
+        }
+
+        return $this->backup;
+    }
+
+    /**
+     * Manually set backup
+     * @param $backup
+     * @return $this
+     * @throws ModelException
+     */
+    public function setBackup($backup)
+    {
+        if(!($backup instanceof \stdClass)) {
+            throw new ModelException("Backup data must be in stdClass");
+        }
+
+        $this->backup = $backup;
+
+        return $this;
     }
 }
