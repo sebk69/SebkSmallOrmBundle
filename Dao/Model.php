@@ -226,20 +226,20 @@ class Model implements \JsonSerializable {
             }
         }
 
-        foreach ($this->metadata as $key => $value) {
-            if ($value instanceof ModelCollection || $value instanceof Model) {
-                $result[$key] = $value->toArray();
-            } else {
-                $result[$key] = $value;
-            }
-        }
-
         if (!$onlyFields) {
-            $result["fromDb"] = $this->fromDb;
-        }
+            foreach ($this->metadata as $key => $value) {
+                if ($value instanceof ModelCollection || $value instanceof Model) {
+                    $result[$key] = $value->toArray();
+                } else {
+                    $result[$key] = $value;
+                }
+            }
 
-        if($this->backup !== null) {
-            $result["backup"] = get_object_vars($this->backup);
+            $result["fromDb"] = $this->fromDb;
+
+            if ($this->backup !== null) {
+                $result["backup"] = get_object_vars($this->backup);
+            }
         }
 
         return $result;
