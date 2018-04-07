@@ -10,10 +10,6 @@ Add repository to your `composer.json` file.
            {
                "type": "git",
                "url": "https://github.com/sebk69/SebkSmallOrmBundle.git"
-           },
-           {
-               "type": "git",
-               "url": "https://github.com/sebk69/SebkSmallUserBundle.git"
            }
        ]
 ```

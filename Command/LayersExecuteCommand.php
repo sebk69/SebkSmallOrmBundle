@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is a part of SebkSmallUserBundle
+ * This file is a part of SebkSmallOrmBundle
  * Copyright 2015-2017 - Sébastien Kus
  * Under GNU GPL V3 licence
  */
@@ -9,7 +9,6 @@ namespace Sebk\SmallOrmBundle\Command;
 
 use Sebk\SmallOrmBundle\Generator\Config;
 use Sebk\SmallOrmBundle\Generator\DbGateway;
-use Sebk\SmallUserBundle\SebkSmallUserBundle;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
