@@ -14,3 +14,12 @@ services:
     sebk_small_orm_layers:
         class: Sebk\SmallOrmBundle\Layers\Layers
         arguments: ["@sebk_small_orm_connections", "%sebk_small_orm.bundles%", "@service_container"]
+    Sebk\SmallOrmBundle\Command\AddTableCommand:
+        public: true
+        tags: [console.command]
+    Sebk\SmallOrmBundle\Command\LayersExecuteCommand:
+        public: true
+        tags: [console.command]
+    Sebk\SmallOrmBundle\Command\UpdateDaoCommand:
+        public: true
+        tags: [console.command]
