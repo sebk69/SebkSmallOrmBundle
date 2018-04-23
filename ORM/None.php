@@ -53,7 +53,7 @@ class None
      */
     public function fetchAll()
     {
-        return $this;
+        return [];
     }
 
     /**
