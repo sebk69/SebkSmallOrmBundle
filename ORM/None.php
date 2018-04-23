@@ -9,8 +9,6 @@ namespace Sebk\SmallOrmBundle\ORM;
  * This class is used when you don't need to connect to the Database. The main use case is when you need to
  * do some unit tests.
  * This will prevent PDO to fail for every request.
- *
- * You can also use it to overwrite PDO methods to get any result.
  */
 class None
 {
@@ -22,6 +20,38 @@ class None
      * @return None $this   Return self object to allow other call
      */
     public function prepare($arguments)
+    {
+        return $this;
+    }
+
+    /**
+     * Generic bindValue method
+     *
+     * @param mixed $arguments  Arguments, can be anything
+     *
+     * @return None $this   Return self object to allow other call
+     */
+    public function bindValue($arguments)
+    {
+        return $this;
+    }
+
+    /**
+     * Generic execute method
+     *
+     * @return None $this   Return self object to allow other call
+     */
+    public function execute()
+    {
+        return $this;
+    }
+
+    /**
+     * Generic fetchAll method
+     *
+     * @return None $this   Return self object to allow other call
+     */
+    public function fetchAll()
     {
         return $this;
     }
