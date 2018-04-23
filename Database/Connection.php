@@ -7,6 +7,8 @@
 
 namespace Sebk\SmallOrmBundle\Database;
 
+use Sebk\SmallOrmBundle\ORM\None;
+
 /**
  * Connection to database
  * TODO: need to be generalized when ORM finished
@@ -45,6 +47,9 @@ class Connection
 
     /**
      * Connect to database, use existing connection if exists
+     *
+     * NB: "None DB" existing in case of a unit tests without any connection to a database.
+     *
      * @throws ConnectionException
      */
     protected function connect()
@@ -66,13 +71,18 @@ class Connection
                     $statement = $this->pdo->prepare("create database `$this->database`;use `$this->database`;");
                     if(!$statement->execute()) {
                         $errInfo = $statement->errorInfo();
-                        throw new ConnectionException("Fail to exectue request : SQLSTATE[".$errInfo[0]."][".$errInfo[1]."] ".$errInfo[2]);
+                        throw new ConnectionException("Fail to execute request : SQLSTATE[".$errInfo[0]."][".$errInfo[1]."] ".$errInfo[2]);
                     }
                 }
                 break;
 
+            // For unit testing purpose
+            case 'none':
+                $this->pdo = new None();
+                break;
+
             default:
-                throw new ConnectionException("Database type is not developped for now");
+                throw new ConnectionException("Database type is not developed for now");
         }
     }
 
@@ -108,7 +118,7 @@ class Connection
                 $this->connect();
                 return $this->execute($sql, $params, true);
             } else {
-                throw new ConnectionException("Fail to exectue request : SQLSTATE[" . $errInfo[0] . "][" . $errInfo[1] . "] " . $errInfo[2]);
+                throw new ConnectionException("Fail to execute request : SQLSTATE[" . $errInfo[0] . "][" . $errInfo[1] . "] " . $errInfo[2]);
             }
         }
     }
