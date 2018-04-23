@@ -49,7 +49,7 @@ class None
     /**
      * Generic fetchAll method
      *
-     * @return None $this   Return self object to allow other call
+     * @return array $this   Return empty array for consistency
      */
     public function fetchAll()
     {
