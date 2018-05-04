@@ -35,4 +35,4 @@ public function registerBundles()
 
 ## Documentation
 
-See [documentation]: http://www.iceberg-linux.net/smallorm.php
+See [documentation]: http://iceberg-linux.net/smallorm.php
