@@ -30,6 +30,18 @@ class Dao
     }
 
     /**
+     * Reset Factory elements
+     *
+     * @return $this
+     */
+    public function reset()
+    {
+        static::$loadedDao = [];
+
+        return $this;
+    }
+
+    /**
      * Get dao of a model
      * @param type $bundle
      * @param type $model
