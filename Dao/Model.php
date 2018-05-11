@@ -202,7 +202,7 @@ class Model implements \JsonSerializable {
         if ($dependecies) {
             foreach ($this->toOnes as $key => $model) {
                 if ($model !== null) {
-                    $result[$key] = $model->jsonSerialize();
+                    $result[$key] = $model->toArray($dependecies, $onlyFields);
                 } else {
                     $result[$key] = null;
                 }
@@ -213,7 +213,7 @@ class Model implements \JsonSerializable {
                     $result[$key] = array();
                     foreach ($array as $i => $model) {
                         if ($model !== null && $model instanceof Model) {
-                            $result[$key][] = $model->jsonSerialize();
+                            $result[$key][] = $model->toArray($dependecies, $onlyFields);
                         } elseif ($model !== null) {
                             $result[$key][] = $model;
                         } else {
