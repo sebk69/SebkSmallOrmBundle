@@ -835,11 +835,19 @@ abstract class AbstractDao {
         $first = true;
         foreach ($conds as $field => $value) {
             if ($first) {
-                $where->firstCondition($query->getFieldForCondition($field), "=", ":" . $field);
-                $query->setParameter($field, $value);
+                if($value !== null) {
+                    $where->firstCondition($query->getFieldForCondition($field), "=", ":" . $field);
+                    $query->setParameter($field, $value);
+                } else {
+                    $where->firstCondition($query->getFieldForCondition($field), "is", null);
+                }
             } else {
-                $where->andCondition($query->getFieldForCondition($field), "=", ":" . $field);
-                $query->setParameter($field, $value);
+                if($value !== null) {
+                    $where->andCondition($query->getFieldForCondition($field), "=", ":" . $field);
+                    $query->setParameter($field, $value);
+                } else {
+                    $where->andCondition($query->getFieldForCondition($field), "is", null);
+                }
             }
 
             $first = false;
