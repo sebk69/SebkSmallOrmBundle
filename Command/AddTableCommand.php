@@ -71,7 +71,9 @@ class AddTableCommand extends ContainerAwareCommand
             $dbGateway = new DbGateway($connection);
 
             foreach($dbGateway->getTables() as $dbTableName) {
-                $this->addTable($connectionName, $bundle, $dbTableName);
+                if($dbTableName != "_small_orm_layers") {
+                    $this->addTable($connectionName, $bundle, $dbTableName);
+                }
             }
         }
     }
@@ -86,13 +88,13 @@ class AddTableCommand extends ContainerAwareCommand
     {
         $daoGenrator = $this->getContainer()->get("sebk_small_orm_generator");
         $daoGenrator->setParameters($connectionName, $bundle);
-        try {
+        //try {
             $daoGenrator->recomputeFilesForTable($dbTableName);
 
             $config = new Config($bundle, $connectionName, $this->getContainer());
             $config->addTable($dbTableName);
-        } catch(\Exception $e) {
+        //} catch(\Exception $e) {
 
-        }
+        //}
     }
 }

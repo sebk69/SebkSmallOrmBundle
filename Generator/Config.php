@@ -33,7 +33,7 @@ class Config
      */
     public function getConfigPath()
     {
-        $dir = $this->container->get('kernel')->locateResource("@".$this->bundle)."SmallOrm";
+        $dir = $this->container->get('kernel')->locateResource("@".$this->bundle)."Resources/SmallOrm";
 
         if(!is_dir($dir)) {
             mkdir($dir);

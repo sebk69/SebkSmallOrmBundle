@@ -202,8 +202,14 @@ class Dao
         $nameSpaceParts = explode("\\", $fullClassName);
 
         // create relative path to file
-        unset($nameSpaceParts[0]);
-        unset($nameSpaceParts[1]);
+        if($nameSpaceParts[0] != "App") {
+            unset($nameSpaceParts[0]);
+            unset($nameSpaceParts[1]);
+        } else {
+            unset($nameSpaceParts[0]);
+            unset($nameSpaceParts[1]);
+            unset($nameSpaceParts[2]);
+        }
         $relativePath = "";
         foreach($nameSpaceParts as $nameSpacePart) {
             $relativePath .= $nameSpacePart."/";
