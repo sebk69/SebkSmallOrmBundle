@@ -389,6 +389,8 @@ class Model implements \JsonSerializable {
     /**
      * Backup values of model (also metadata)
      * @param bool $deeply
+     * @param bool $dry
+     * @return mixed
      */
     public function backup($deeply = false, $dry = false)
     {
