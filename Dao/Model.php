@@ -122,6 +122,53 @@ class Model implements \JsonSerializable {
     }
 
     /**
+     * Magic getter
+     * @param $property
+     * @return mixed
+     * @throws ModelException
+     */
+    public function __get($property)
+    {
+        $typeField = $this->getFieldType($property);
+
+        if ($typeField == "primaryKeys") {
+            return $this->primaryKeys[$property];
+        } elseif ($typeField == "field") {
+            return $this->fields[$property];
+        } elseif ($typeField == "toOne") {
+            return $this->toOnes[$property];
+        } elseif ($typeField == "toMany") {
+            return $this->toManys[$property];
+        } elseif ($typeField == "metadata" && array_key_exists($property, $this->metadata)) {
+            return $this->metadata[$property];
+        }
+
+        throw new ModelException("Property '$property' does not exists");
+    }
+
+    /**
+     * Magic setter
+     * @param $property
+     * @param $value
+     */
+    public function __set($property, $value)
+    {
+        $typeField = $this->getFieldType($property);
+
+        if ($typeField == "primaryKeys") {
+            $this->primaryKeys[$property] = $value;
+        } elseif ($typeField == "field") {
+            $this->fields[$property] = $value;
+        } elseif ($typeField == "toOne") {
+            $this->toOnes[$property] = $value;
+        } elseif ($typeField == "toMany") {
+            $this->toManys[$property] = $value;
+        } elseif ($typeField == "metadata") {
+            $this->metadata[$property] = $value;
+        }
+    }
+
+    /**
      * Set original primary key
      */
     public function setOriginalPrimaryKeys()
