@@ -249,7 +249,7 @@ class Model implements \JsonSerializable {
         if ($dependecies) {
             foreach ($this->toOnes as $key => $model) {
                 if ($model !== null) {
-                    $result[$key] = $model->jsonSerialize();
+                    $result[$key] = $model->toArray($dependecies, $onlyFields);
                 } else {
                     $result[$key] = null;
                 }
@@ -260,7 +260,7 @@ class Model implements \JsonSerializable {
                     $result[$key] = array();
                     foreach ($array as $i => $model) {
                         if ($model !== null && $model instanceof Model) {
-                            $result[$key][] = $model->jsonSerialize();
+                            $result[$key][] = $model->toArray($dependecies, $onlyFields);
                         } elseif ($model !== null) {
                             $result[$key][] = $model;
                         } else {
@@ -436,33 +436,41 @@ class Model implements \JsonSerializable {
     /**
      * Backup values of model (also metadata)
      * @param bool $deeply
+     * @param bool $dry
+     * @return mixed
      */
-    public function backup($deeply = false)
+    public function backup($deeply = false, $dry = false)
     {
         // save object
         $json = json_encode($this->toArray(false));
         $backup = json_decode($json);
-        if(isset($backup->backup)) {
-            unset($backup->backup);
-        }
-        $this->backup = $backup;
 
-        // save dependencies
-        if($deeply) {
-            foreach ($this->toOnes as $key => $model) {
-                if($model !== null) {
-                    $model->backup();
-                }
+        if(!$dry) {
+            if(isset($backup->backup)) {
+                unset($backup->backup);
             }
 
-            foreach ($this->toManys as $key => $array) {
-                if ($array !== null) {
-                    foreach ($array as $model) {
+            $this->backup = $backup;
+
+            // save dependencies
+            if($deeply) {
+                foreach ($this->toOnes as $key => $model) {
+                    if($model !== null) {
                         $model->backup();
+                    }
+                }
+
+                foreach ($this->toManys as $key => $array) {
+                    if ($array !== null) {
+                        foreach ($array as $model) {
+                            $model->backup();
+                        }
                     }
                 }
             }
         }
+
+        return $backup;
     }
 
     /**
@@ -494,5 +502,21 @@ class Model implements \JsonSerializable {
         $this->backup = $backup;
 
         return $this;
+    }
+
+    /**
+     * Test if object modified since last backup
+     * @return bool
+     * @throws ModelException
+     */
+    public function modifiedSinceBackup()
+    {
+        if(!isset($this->backup)) {
+            throw new ModelException("Backup is not set");
+        }
+
+        $newBackup = $this->backup(false, true);
+
+        return $this->backup == $newBackup;
     }
 }

@@ -1,6 +1,6 @@
 {
-    "name": "Sebk/SmallOrmBundle",
-    "license": "GPL V3",
+    "name": "sebk/small-orm-bundle",
+    "license": "GPL-3.0-only",
     "type": "project",
     "description": "Small Orm for Symfony",
     "autoload": {

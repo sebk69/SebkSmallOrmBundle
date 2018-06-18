@@ -3,22 +3,9 @@ Small ORM for symfony app
 
 ## Install
 
-Add repository to your `composer.json` file.
-
+Require the bundle with composer:
 ```
-"repositories": [
-           {
-               "type": "git",
-               "url": "https://github.com/sebk69/SebkSmallOrmBundle.git"
-           }
-       ]
-```
-
-Add [`Sebk/SmallOrmBundle`]
-to your `composer.json` file.
-
-```
-"Sebk/SmallUserBundle": "dev-master"
+composer require sebk/small-orm-bundle "~1.0"
 ```
 
 Register the bundle in `app/AppKernel.php`:
@@ -35,4 +22,4 @@ public function registerBundles()
 
 ## Documentation
 
-See [documentation]: http://www.iceberg-linux.net/smallorm.php
+See [documentation]: http://iceberg-linux.net/smallorm.php

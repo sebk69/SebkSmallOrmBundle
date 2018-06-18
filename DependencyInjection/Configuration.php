@@ -32,7 +32,7 @@ class Configuration implements ConfigurationInterface
                             ->scalarNode('type')
                                 ->isRequired()
                                 ->validate()
-                                ->ifNotInArray(array('mysql'))
+                                ->ifNotInArray(array('mysql', 'none'))
                                     ->thenInvalid('Invalid database driver "%s"')
                                 ->end()
                             ->end()
