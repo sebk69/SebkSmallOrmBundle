@@ -1,5 +1,5 @@
 {
-    "name": "Sebk/SmallOrmBundle",
+    "name": "sebk/small-orm-bundle",
     "license": "GPL V3",
     "type": "project",
     "description": "Small Orm for Symfony",
