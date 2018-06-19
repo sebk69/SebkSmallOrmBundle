@@ -44,7 +44,7 @@ class FromBuilder
      */
     public function getAlias()
     {
-        return $this->alias;
+        return "`".$this->alias."`";
     }
 
     /**
@@ -54,7 +54,7 @@ class FromBuilder
      */
     protected function buildFieldForSql(Field $field, $withAlias = true)
     {
-        $result = $this->alias.".".$field->getDbName();
+        $result = "`".$this->alias."`".".".$field->getDbName();
         if($withAlias) {
             $result .= " AS ".$this->getFieldAliasForSql($field);
         }
@@ -67,9 +67,13 @@ class FromBuilder
      * @param Field $field
      * @return string
      */
-    public function getFieldAliasForSql(Field $field)
+    public function getFieldAliasForSql(Field $field, $escape = true)
     {
-        return $this->alias."_".$field->getModelName();
+        if($escape) {
+            return "`" . $this->alias . "_" . $field->getModelName() . "`";
+        }
+
+        return $this->alias . "_" . $field->getModelName();
     }
 
     /**
@@ -126,6 +130,6 @@ class FromBuilder
      */
     public function getSql()
     {
-        return $this->dao->getDbTableName()." AS ".$this->alias;
+        return $this->dao->getDbTableName()." AS `".$this->alias."`";
     }
 }

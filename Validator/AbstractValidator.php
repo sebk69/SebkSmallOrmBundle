@@ -74,7 +74,7 @@ abstract class AbstractValidator
     }
 
     /**
-     *
+     * Test field is unique
      * @param string $field
      * @return string
      */
@@ -108,6 +108,50 @@ abstract class AbstractValidator
                 ":".$field);
             $query->setParameter($field, $this->model->$method());
             
+            $result = $dao->getResult($query);
+        }
+
+        return count($result) == 0;
+    }
+
+    /**
+     * Test field is unique for determinant
+     * @param string $field
+     * @return string
+     */
+    public function testUniqueWithDeterminant($determinantField, $determinantValue, $field)
+    {
+        $dao      = $this->daoFactory->get($this->model->getBundle(),
+            $this->model->getModelName());
+        $creation = !$this->model->fromDb;
+
+        $query  = $dao->createQueryBuilder("uniqueTable");
+        $where  = $query->where();
+        $method = "get".$field;
+
+        if ($creation) {
+            $result = $dao->findBy(array($field => $this->model->$method(), $determinantField => $determinantValue));
+        } else {
+            $first = true;
+            foreach ($this->model->getPrimaryKeys() as $key => $value) {
+                if ($first) {
+                    $where->firstCondition($query->getFieldForCondition($key),
+                        "<>", ":".$key."Primary");
+                    $query->setParameter($key."Primary", $value);
+                } else {
+                    $where->andCondition($query->getFieldForCondition($key),
+                        "<>", ":".$key."Primary");
+                    $query->setParameter($key."Primary", $value);
+                }
+            }
+
+            $where->andCondition($query->getFieldForCondition($field), "=",
+                ":".$field);
+            $query->setParameter($field, $this->model->$method());
+
+            $where->andCondition($query->getFieldForCondition($determinantField), "=", ":determinant");
+            $query->setParameter("determinant", $determinantValue);
+
             $result = $dao->getResult($query);
         }
 

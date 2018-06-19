@@ -486,11 +486,11 @@ abstract class AbstractDao {
         $result = array();
         $empty = true;
         foreach ($this->getPrimaryKeys() as $field) {
-            if (array_key_exists($queryRelation->getFieldAliasForSql($field), $record)) {
-                if ($record[$queryRelation->getFieldAliasForSql($field)] != null) {
+            if (array_key_exists($queryRelation->getFieldAliasForSql($field, false), $record)) {
+                if ($record[$queryRelation->getFieldAliasForSql($field, false)] != null) {
                     $empty = false;
                 }
-                $result[$field->getModelName()] = $record[$queryRelation->getFieldAliasForSql($field)];
+                $result[$field->getModelName()] = $record[$queryRelation->getFieldAliasForSql($field, false)];
             } else {
                 throw new DaoException("Record not match query");
             }
@@ -516,8 +516,8 @@ abstract class AbstractDao {
 
         $result = array();
         foreach ($this->getFields() as $field) {
-            if (array_key_exists($queryRelation->getFieldAliasForSql($field), $record)) {
-                $result[$field->getModelName()] = $record[$queryRelation->getFieldAliasForSql($field)];
+            if (array_key_exists($queryRelation->getFieldAliasForSql($field, false), $record)) {
+                $result[$field->getModelName()] = $record[$queryRelation->getFieldAliasForSql($field, false)];
             } else {
                 throw new DaoException("Record not match query");
             }
