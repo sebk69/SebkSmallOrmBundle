@@ -6,6 +6,12 @@
     "autoload": {
         "psr-4": { "Sebk\\SmallOrmBundle\\": "" }
     },
+    "authors": [
+        {
+            "name": "Sébastien Kus",
+            "email": "seb@ktoi.fr"
+        }
+    ],
     "require-dev": {
     }
 }
