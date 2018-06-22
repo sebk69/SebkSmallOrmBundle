@@ -1,7 +1,7 @@
 {
     "name": "sebk/small-orm-bundle",
     "license": "GPL-3.0-only",
-    "type": "project",
+    "type": "library",
     "description": "Small Orm for Symfony",
     "autoload": {
         "psr-4": { "Sebk\\SmallOrmBundle\\": "" }
