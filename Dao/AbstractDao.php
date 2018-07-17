@@ -73,7 +73,7 @@ abstract class AbstractDao {
      * @return string
      */
     public function getDbTableName() {
-        return $this->dbTableName;
+        return "`".$this->dbTableName."`";
     }
 
     /**

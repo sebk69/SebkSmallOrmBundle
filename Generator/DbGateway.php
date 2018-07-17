@@ -31,7 +31,7 @@ class DbGateway
                 $this->dbTables[] = $table;
 
                 // get description
-                $this->tableDescriptions[$table] = $connection->execute("describe ".$table);
+                $this->tableDescriptions[$table] = $connection->execute("describe `".$table."`");
 
                 // get to one relations
                 $parser = new CreateTableParser($connection);

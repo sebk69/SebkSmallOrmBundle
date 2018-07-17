@@ -116,8 +116,12 @@ abstract class AbstractValidator
 
     /**
      * Test field is unique for determinant
-     * @param string $field
-     * @return string
+     * @param $determinantField
+     * @param $determinantValue
+     * @param $field
+     * @return bool
+     * @throws \Sebk\SmallOrmBundle\Factory\ConfigurationException
+     * @throws \Sebk\SmallOrmBundle\Factory\DaoNotFoundException
      */
     public function testUniqueWithDeterminant($determinantField, $determinantValue, $field)
     {

@@ -54,7 +54,7 @@ class FromBuilder
      */
     protected function buildFieldForSql(Field $field, $withAlias = true)
     {
-        $result = "`".$this->alias."`".".".$field->getDbName();
+        $result = "`".$this->alias."`.".$field->getDbName();
         if($withAlias) {
             $result .= " AS ".$this->getFieldAliasForSql($field);
         }
