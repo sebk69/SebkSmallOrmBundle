@@ -330,7 +330,7 @@ class Model implements \JsonSerializable {
             throw new DaoException("Field '$alias' does not exists (loading to many relation");
         }
 
-        if (!count($this->toManys[$alias])) {
+        if (count($this->toManys[$alias]) == 0) {
             $this->container
                     ->get("sebk_small_orm_dao")
                     ->get($this->bundle, $this->modelName)
