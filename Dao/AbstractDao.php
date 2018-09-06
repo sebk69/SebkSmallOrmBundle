@@ -53,10 +53,20 @@ abstract class AbstractDao {
     }
 
     /**
+     * Get model name
      * @return string
      */
-    public function getModelName() {
+    public function getModelName()
+    {
         return $this->modelName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBundle()
+    {
+        return $this->modelBundle;
     }
 
     /**
@@ -535,7 +545,7 @@ abstract class AbstractDao {
     }
 
     /**
-     *
+     * Add to one relation
      * @param array $keys
      * @param string $toModel
      * @param string $toBundle
@@ -561,7 +571,16 @@ abstract class AbstractDao {
     }
 
     /**
-     *
+     * Return to one relations
+     * @return ToOneRelation[]
+     */
+    public function getToOneRelations()
+    {
+        return $this->toOne;
+    }
+
+    /**
+     * Add a to many relation
      * @param array $keys
      * @param string $toModel
      * @param string $toBundle
@@ -584,6 +603,15 @@ abstract class AbstractDao {
         $this->toMany[$alias] = new ToManyRelation($toBundle, $toModel, $keys, $this->daoFactory, $alias);
 
         return $this;
+    }
+
+    /**
+     * Get to many relations
+     * @return ToManyRelation[]
+     */
+    public function getToManyRelations()
+    {
+        return $this->toMany;
     }
 
     /**
