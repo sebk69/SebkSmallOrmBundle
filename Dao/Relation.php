@@ -38,7 +38,7 @@ class Relation
     }
 
     /**
-     * @return Dao
+     * @return AbstractDao
      */
     public function getDao()
     {

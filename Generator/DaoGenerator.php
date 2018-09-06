@@ -8,12 +8,19 @@
 namespace Sebk\SmallOrmBundle\Generator;
 
 
+use Sebk\SmallOrmBundle\Dao\AbstractDao;
 use Sebk\SmallOrmBundle\Dao\DaoException;
+use Sebk\SmallOrmBundle\Dao\Field;
+use Sebk\SmallOrmBundle\Dao\ToOneRelation;
 use Sebk\SmallOrmBundle\Database\Connection;
 use Sebk\SmallOrmBundle\Factory\Connections;
 use Sebk\SmallOrmBundle\Factory\Dao;
 use Sebk\SmallOrmBundle\Factory\DaoNotFoundException;
 
+/**
+ * Class DaoGenerator
+ * @package Sebk\SmallOrmBundle\Generator
+ */
 class DaoGenerator
 {
     protected $connectionName;
@@ -288,7 +295,79 @@ class [modelName] extends Model
             );
             file_put_contents($modelFile, $content);
         }
+        $this->createAtModelMethods(static::camelize($dbTableName));
 
         return $this;
+    }
+
+    /**
+     * Create @method bloc comment for model
+     * @param $daoName
+     * @return string
+     * @throws DaoNotFoundException
+     * @throws \Sebk\SmallOrmBundle\Factory\ConfigurationException
+     */
+    public function createAtModelMethods($daoName)
+    {
+        // Init methods
+        /** @var string[] $methods */
+        $methods = [];
+
+        // Get dao
+        /** @var AbstractDao $dao */
+        $dao = $this->daoFactory->get($this->bundle, $daoName);
+
+        // Create @methods for fields
+        /** @var Field $field */
+        foreach ($dao->getFields() as $field) {
+            $methods[] = " * @method get" . ucfirst($field->getModelName() . "()");
+            $methods[] = " * @method set" . ucfirst($field->getModelName() . "(\$value)");
+        }
+
+        // TODO multi connection relations
+        // Create @methods for to one relations
+        foreach ($dao->getToOneRelations() as $toOneRelation) {
+            $methods[] = " * @method \\".$this->daoFactory->getModelNamespace($this->connectionName, $toOneRelation->getDao()->getBundle()).
+                "\\".$toOneRelation->getDao()->getModelName().
+                " get" . ucfirst($toOneRelation->getAlias() . "()");
+        }
+
+        // Create @methods for to many relations
+        foreach ($dao->getToManyRelations() as $toManyRelation) {
+            $methods[] = " * @method \\".$this->daoFactory->getModelNamespace($this->connectionName, $toManyRelation->getDao()->getBundle()).
+                "\\".$toManyRelation->getDao()->getModelName().
+                "[] get" . ucfirst($toManyRelation->getAlias() . "()");
+        }
+
+        // Finalise block comment
+        $blocComment = "/**\n";
+        foreach ($methods as $method) {
+            $blocComment .= $method."\n";
+        }
+        $blocComment .= " */\n";
+
+        // Read model file
+        $finalFile = "";
+        $commentInsered = false;
+        $modelFile = $this->daoFactory->getModelFile($this->connectionName, $this->bundle, $daoName, true);
+        if(file_exists($modelFile)) {
+            $f = fopen($modelFile, "r");
+            while ($line = fgets($f)) {
+                if (!$commentInsered) {
+                    if (strstr($line, "class")) {
+                        $finalFile .= $blocComment;
+                        $finalFile .= $line;
+                        $commentInsered = true;
+                    } elseif (!strstr($line, "*")) {
+                        $finalFile .= $line;
+                    }
+                } else {
+                    $finalFile .= $line;
+                }
+            }
+            fclose($f);
+
+            file_put_contents($modelFile, $finalFile);
+        }
     }
 }

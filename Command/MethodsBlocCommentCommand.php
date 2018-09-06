@@ -19,14 +19,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Sebk\SmallOrmBundle\Generator\FileParser;
 use Symfony\Component\Console\Question\Question;
 
-class AddTableCommand extends ContainerAwareCommand
+class MethodsBlocCommentCommand extends ContainerAwareCommand
 {
 
     protected function configure()
     {
         $this
-            ->setName('sebk:small-orm:add-table')
-            ->setDescription('Add dao for database table')
+            ->setName('sebk:small-orm:add-methods-bloc-comment')
+            ->setDescription('Add methods bloc comment in model')
         ;
     }
 
@@ -61,37 +61,23 @@ class AddTableCommand extends ContainerAwareCommand
         $bundle = $helper->ask($input, $output, $question);
 
         // and table
-        $question = new Question('Database table [all] ? ', 'all');
-        $dbTableName = $helper->ask($input, $output, $question);
+        $question = new Question('Dao [all] ? ', 'all');
+        $dao = $helper->ask($input, $output, $question);
 
-        // add selected tables
-        if($dbTableName != "all") {
-            $this->addTable($connectionName, $bundle, $dbTableName);
-        } else {
-            $connection = $this->getContainer()->get("sebk_small_orm_connections")->get($connectionName);
-            $dbGateway = new DbGateway($connection);
-
-            foreach($dbGateway->getTables() as $dbTableName) {
-                if($dbTableName != "_small_orm_layers") {
-                    $this->addTable($connectionName, $bundle, $dbTableName);
-                }
-            }
-        }
-    }
-
-    /*
-     * Add table to bundle
-     * @param $connectionName
-     * @param $bundle
-     * @param $dbTableName
-     */
-    protected function addTable($connectionName, $bundle, $dbTableName)
-    {
         /** @var DaoGenerator $daoGenrator */
         $daoGenrator = $this->getContainer()->get("sebk_small_orm_generator");
         $daoGenrator->setParameters($connectionName, $bundle);
-        $daoGenrator->recomputeFilesForTable($dbTableName);
-        $config = new Config($bundle, $connectionName, $this->getContainer());
-        $config->addTable($dbTableName);
+        if($dao != "all") {
+            // Single file
+            $daoGenrator->createAtModelMethods($dao);
+        } else {
+            // All files
+            foreach(scandir($this->getContainer()->get("sebk_small_orm_dao")->getDaoDir($bundle, $connectionName)) as $file) {
+                if(substr($file, strlen($file) - 4) == ".php") {
+                    $dao = substr($file, 0, strlen($file) - 4);
+                    $daoGenrator->createAtModelMethods($dao);
+                }
+            }
+        }
     }
 }

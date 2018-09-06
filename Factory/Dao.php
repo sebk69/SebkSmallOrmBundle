@@ -75,6 +75,30 @@ class Dao
     }
 
     /**
+     * Get dao directory for a bundle and a connection
+     * @param $bundle
+     * @param $connection
+     * @return string
+     */
+    public function getDaoDir($bundle, $connection)
+    {
+        if (!isset($this->config[$bundle])) {
+            throw new ConfigurationException("Bundle '$bundle' is not configured");
+        }
+
+        if(!isset($this->config[$bundle]["connections"][$connection])) {
+            throw new ConfigurationException(("Connection '$connection' is not configured for bundle '$bundle'"));
+        }
+
+        $parts = explode("\\", $this->config[$bundle]["connections"][$connection]["dao_namespace"]);
+        unset($parts[0]);
+        unset($parts[1]);
+        $relativePath = implode("/", $parts);
+
+        return $this->container->get('kernel')->locateResource("@".$bundle)."/".$relativePath;
+    }
+
+    /**
      * Return the class name with namespace
      * @param $connectionNameOfDao
      * @param $bundle
