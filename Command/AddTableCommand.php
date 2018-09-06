@@ -8,6 +8,7 @@
 namespace Sebk\SmallOrmBundle\Command;
 
 use Sebk\SmallOrmBundle\Generator\Config;
+use Sebk\SmallOrmBundle\Generator\DaoGenerator;
 use Sebk\SmallOrmBundle\Generator\DbGateway;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -84,15 +85,11 @@ class AddTableCommand extends ContainerAwareCommand
      */
     protected function addTable($connectionName, $bundle, $dbTableName)
     {
+        /** @var DaoGenerator $daoGenrator */
         $daoGenrator = $this->getContainer()->get("sebk_small_orm_generator");
         $daoGenrator->setParameters($connectionName, $bundle);
-        try {
-            $daoGenrator->recomputeFilesForTable($dbTableName);
-
-            $config = new Config($bundle, $connectionName, $this->getContainer());
-            $config->addTable($dbTableName);
-        } catch(\Exception $e) {
-
-        }
+        $daoGenrator->recomputeFilesForTable($dbTableName);
+        $config = new Config($bundle, $connectionName, $this->getContainer());
+        $config->addTable($dbTableName);
     }
 }
