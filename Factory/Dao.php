@@ -62,12 +62,16 @@ class Dao
         foreach ($this->config[$bundle]["connections"] as $connectionName => $connectionsParams) {
             $className = $connectionsParams["dao_namespace"].'\\'.$model;
             if (class_exists($className)) {
-                static::$loadedDao[$bundle][$model] = new $className($this->connectionFactory->get($connectionName),
-                    $this, $connectionsParams["model_namespace"], $model,
-                    $bundle,
-                    $this->container);
+                if(!(new \ReflectionClass($className))->isAbstract()) {
+                    static::$loadedDao[$bundle][$model] = new $className($this->connectionFactory->get($connectionName),
+                        $this, $connectionsParams["model_namespace"], $model,
+                        $bundle,
+                        $this->container);
 
-                return static::$loadedDao[$bundle][$model];
+                    return static::$loadedDao[$bundle][$model];
+                } else {
+                    throw new DaoNotFoundException("Dao of model $model of bundle $bundle is abstract");
+                }
             }
         }
 
