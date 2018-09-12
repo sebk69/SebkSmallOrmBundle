@@ -314,8 +314,12 @@ class [modelName] extends Model
         $methods = [];
 
         // Get dao
-        /** @var AbstractDao $dao */
-        $dao = $this->daoFactory->get($this->bundle, $daoName);
+        try {
+            /** @var AbstractDao $dao */
+            $dao = $this->daoFactory->get($this->bundle, $daoName);
+        } catch(DaoNotFoundException $e) {
+            return;
+        }
 
         // Create @methods for fields
         /** @var Field $field */
