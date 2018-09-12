@@ -676,7 +676,7 @@ abstract class AbstractDao {
      */
     public function getDbNameFromModelName($modelName) {
         foreach ($this->getFields() as $field) {
-            if ($modelName == $field->getModelName()) {
+            if (strtolower($modelName) == strtolower($field->getModelName())) {
                 return $field->getDbName();
             }
         }
