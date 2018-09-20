@@ -66,6 +66,9 @@ class UpdateDaoCommand extends ContainerAwareCommand
             }
             $this->updateTable($connectionName, $record["bundle"], $record["table"]);
         }
+
+        $output->writeln("Generating completion helper...");
+        shell_exec("bin/console sebk:small-orm:add-methods-bloc-comment");
     }
 
     /*

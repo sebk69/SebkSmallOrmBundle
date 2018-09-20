@@ -91,9 +91,7 @@ class Dao
         }
 
         $parts = explode("\\", $this->config[$bundle]["connections"][$connection]["dao_namespace"]);
-        unset($parts[0]);
-        unset($parts[1]);
-        $relativePath = implode("/", $parts);
+        $relativePath = $parts[count($parts) - 1];
 
         return $this->container->get('kernel')->locateResource("@".$bundle)."/".$relativePath;
     }

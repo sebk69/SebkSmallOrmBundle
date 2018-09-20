@@ -295,7 +295,6 @@ class [modelName] extends Model
             );
             file_put_contents($modelFile, $content);
         }
-        $this->createAtModelMethods(static::camelize($dbTableName));
 
         return $this;
     }

@@ -32,3 +32,6 @@ services:
     Sebk\SmallOrmBundle\Command\UpdateDaoCommand:
         public: true
         tags: [console.command]
+    Sebk\SmallOrmBundle\Command\MethodsBlocCommentCommand:
+        public: true
+        tags: [console.command]

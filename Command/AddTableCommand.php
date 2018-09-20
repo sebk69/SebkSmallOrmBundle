@@ -77,6 +77,9 @@ class AddTableCommand extends ContainerAwareCommand
                 }
             }
         }
+
+        $output->writeln("Generating completion helper...");
+        shell_exec("bin/console sebk:small-orm:add-methods-bloc-comment");
     }
 
     /*
