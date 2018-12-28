@@ -68,6 +68,7 @@ class [modelName] extends Model
      * @param $connectionName
      * @param $bundle
      * @return $this
+     * @throws \Sebk\SmallOrmBundle\Factory\ConfigurationException
      */
     public function setParameters($connectionName, $bundle)
     {
@@ -241,7 +242,7 @@ class [modelName] extends Model
                 $output .= '            ->addToMany("'.static::camelize($toMany["toTable"], true, true).
                     '", ["'.static::camelize($toMany["toField"], true).'" => "'.static::camelize($toMany["fromField"], true).'"], "'.$this->getDaoClassName($toMany["toTable"]).'"';
                 if($toBundle == $this->bundle) {
-                    $output .= ');
+                    $output .= ')
 ';
                 } else {
                     $output .= ', "'.$toBundle.'");

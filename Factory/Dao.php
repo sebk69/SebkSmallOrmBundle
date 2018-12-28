@@ -242,7 +242,7 @@ class Dao
         } else {
             unset($nameSpaceParts[0]);
             unset($nameSpaceParts[1]);
-            unset($nameSpaceParts[2]);
+            //unset($nameSpaceParts[2]);
         }
         $relativePath = "";
         foreach($nameSpaceParts as $nameSpacePart) {
