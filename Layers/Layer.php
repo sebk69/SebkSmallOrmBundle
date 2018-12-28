@@ -17,6 +17,7 @@ class Layer
     const CONNECTION_PARAMETER = "connection";
     const DEPENDS_PARAMETER = "depends";
     const REQUIRED_PARAMETER = "required-parameters";
+    const NO_EXECUTE_PARAMETER = "no-execute";
 
     // Properties
     protected $layerRootPath;
@@ -139,6 +140,10 @@ class Layer
                 }
             }
         }
+
+        if(isset($config[static::NO_EXECUTE_PARAMETER]) && $config[static::NO_EXECUTE_PARAMETER]) {
+            $this->requiredParametersSatisfied = false;
+        }
     }
 
     /**
@@ -175,6 +180,13 @@ class Layer
                 case static::REQUIRED_PARAMETER:
                     if(!is_array($configValue)) {
                         throw new LayerSyntaxError("Missing entries in paramter '".static::REQUIRED_PARAMETER."'$layerPath");
+                    }
+                    break;
+
+                // Check no-execute parameter
+                case static::NO_EXECUTE_PARAMETER:
+                    if(!is_bool($configValue)) {
+                        throw new LayerSyntaxError("The parameter '".static::NO_EXECUTE_PARAMETER."' must be boolean$layerPath");
                     }
                     break;
 

@@ -8,6 +8,8 @@
 
 namespace Sebk\SmallOrmBundle\Dao;
 
+use Sebk\SmallOrmBundle\Validator\AbstractValidator;
+
 /**
  * Class model
  */
@@ -375,7 +377,7 @@ class Model implements \JsonSerializable {
 
     /**
      * Get validator
-     * @return mixed
+     * @return AbstractValidator
      */
     public function getValidator()
     {
