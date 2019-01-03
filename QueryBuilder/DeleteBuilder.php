@@ -28,7 +28,7 @@ class DeleteBuilder
     }
     
     public function __clone() {
-        $this->from = clone $from;
+        $this->from = clone $this->from;
         $this->where = clone $this->where;
         $this->where->setParent($this);
     }

@@ -31,7 +31,7 @@ class UpdateBuilder
     }
     
     public function __clone() {
-        $this->from = clone $from;
+        $this->from = clone $this->from;
         $fromJoins = $this->joins;
         $this->joins = array();
         foreach ($fromJoins as $join) {
