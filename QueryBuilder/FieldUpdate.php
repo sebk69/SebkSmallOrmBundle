@@ -43,6 +43,24 @@ class FieldUpdate
     }
 
     /**
+     * Get field
+     * @return string
+     */
+    public function getField()
+    {
+        return $this->field;
+    }
+
+    /**
+     * Get update value
+     * @return mixed
+     */
+    public function getUpdateValue()
+    {
+        return $this->update;
+    }
+
+    /**
      * Get type of update
      * @param mixed $var
      * @return string

@@ -330,6 +330,18 @@ class QueryBuilder {
 
         return $this->where;
     }
+
+    /**
+     * Set prebuild where
+     * @param Bracket $where
+     * @return $this
+     */
+    public function setWhere(Bracket $where)
+    {
+        $this->where = $where;
+
+        return $this;
+    }
     
     /**
      * Replace where by raw where

@@ -305,7 +305,9 @@ abstract class AbstractDao {
     /**
      * Get result for a query
      * @param QueryBuilder $query
-     * @return array
+     * @param bool $asCollection
+     * @return Model[]
+     * @throws \Sebk\SmallOrmBundle\QueryBuilder\QueryBuilderException
      */
     public function getResult(QueryBuilder $query, $asCollection = false) {
         foreach ($this->primaryKeys as $key) {
@@ -324,10 +326,26 @@ abstract class AbstractDao {
     /**
      * Execute mass update
      * @param UpdateBuilder $query
-     * @return array
+     * @param bool $executeModelMethods
+     * @return $this
+     * @throws \Sebk\SmallOrmBundle\Database\ConnectionException
+     * @throws \Sebk\SmallOrmBundle\QueryBuilder\QueryBuilderException
      */
-    public function executeUpdate(UpdateBuilder $query) {
-        $this->connection->execute($query->getSql(), $query->getParameters());
+    public function executeUpdate(UpdateBuilder $query, $executeModelMethods = true) {
+        if (!$executeModelMethods) {
+            $this->connection->execute($query->getSql(), $query->getParameters());
+
+            return $this;
+        }
+
+        $result = $this->getResult($query->createQueryBuilder($query->getAlias()));
+        foreach ($result as $model) {
+            foreach ($query->getFieldsToUpdate() as $fieldUpdate) {
+                $setter = "set".$fieldUpdate->getField()->getModelName();
+                $model->$setter($fieldUpdate->getUpdateValue());
+            }
+            $model->persist();
+        }
 
         return $this;
     }
@@ -335,10 +353,22 @@ abstract class AbstractDao {
     /**
      * Execute mass delete
      * @param DeleteBuilder $query
-     * @return array
+     * @param bool $executeModelMethods
+     * @return $this
+     * @throws \Sebk\SmallOrmBundle\Database\ConnectionException
+     * @throws \Sebk\SmallOrmBundle\QueryBuilder\QueryBuilderException
      */
-    public function executeDelete(DeleteBuilder $query) {
-        $this->connection->execute($query->getSql(), $query->getParameters());
+    public function executeDelete(DeleteBuilder $query, $executeModelMethods = true) {
+        if (!$executeModelMethods) {
+            $this->connection->execute($query->getSql(), $query->getParameters());
+
+            return $this;
+        }
+
+        $result = $this->getResult($query->createQueryBuilder());
+        foreach ($result as $model) {
+            $model->delete();
+        }
 
         return $this;
     }
