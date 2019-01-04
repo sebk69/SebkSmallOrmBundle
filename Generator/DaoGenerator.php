@@ -25,6 +25,7 @@ class DaoGenerator
 {
     protected $connectionName;
     protected $bundle;
+    protected $config;
     protected $daoFactory;
     protected $connections;
     protected $dbGateway;
@@ -56,11 +57,12 @@ class [modelName] extends Model
      * @param Dao $daoFactory
      * @param Connections $connections
      */
-    public function __construct(Dao $daoFactory, Connections $connections, $container)
+    public function __construct(Dao $daoFactory, Connections $connections, $container, $config)
     {
         $this->daoFactory = $daoFactory;
         $this->connections = $connections;
         $this->container = $container;
+        $this->config = $config;
     }
 
     /**
@@ -83,6 +85,12 @@ class [modelName] extends Model
      * @return string
      */
     private function getDaoClassName($table) {
+        foreach ($this->config[$this->bundle]["connections"][$this->connectionName]["remove_tables_namespaces"] as $namespace) {
+            if(substr($table, 0, strlen($namespace)) == $namespace) {
+                $table = substr($table, strlen($namespace));
+            }
+        }
+
         return $this->camelize($table);
     }
 
@@ -283,19 +291,19 @@ class [modelName] extends Model
         $this->putDaoFileContent($dbTableName, $content);
 
         // Create model class if not exists
-        $modelFile = $this->daoFactory->getModelFile($this->connectionName, $this->bundle, static::camelize($dbTableName), true);
+        $modelFile = $this->daoFactory->getModelFile($this->connectionName, $this->bundle, $this->getDaoClassName($dbTableName), true);
         if(!file_exists($modelFile)) {
             $content = str_replace(
                 "[namespace]",
                 $this->daoFactory->getModelNamespace($this->connectionName, $this->bundle),
                 str_replace("[modelName]",
-                    static::camelize($dbTableName),
+                    $this->getDaoClassName($dbTableName),
                     static::$modelTemplate
                 )
             );
             file_put_contents($modelFile, $content);
         }
-        $this->createAtModelMethods(static::camelize($dbTableName));
+        $this->createAtModelMethods($this->getDaoClassName($dbTableName));
 
         return $this;
     }
