@@ -11,6 +11,7 @@ use Sebk\SmallOrmBundle\Dao\AbstractDao;
 
 class UpdateBuilder
 {
+    protected $baseDao;
     protected $from;
     protected $where;
     protected $fieldsUpdate = array();
@@ -23,20 +24,19 @@ class UpdateBuilder
      */
     public function __construct(AbstractDao $baseDao, $baseAlias = null)
     {
+        $this->baseDao = $baseDao;
+
         if ($baseAlias == null) {
             $baseAlias = $baseDao->getModelName();
         }
 
         $this->from = new FromBuilder($baseDao, $baseAlias);
     }
-    
-    public function __clone() {
-        $this->from = clone $from;
-        $fromJoins = $this->joins;
-        $this->joins = array();
-        foreach ($fromJoins as $join) {
-            $this->joins[] = clone $join;
-        }
+
+    public function __clone()
+    {
+        $this->from = clone $this->from;
+
         $this->where = clone $this->where;
         $this->where->setParent($this);
         
@@ -45,6 +45,30 @@ class UpdateBuilder
         foreach($fieldsUpdateFrom as $fieldUpdate) {
             $this->fieldsUpdate[] = clone $fieldUpdate;
         }
+    }
+
+    /**
+     * Create query builder from this
+     * @return QueryBuilder
+     */
+    public function createQueryBuilder()
+    {
+        $query = $this->baseDao->createQueryBuilder();
+        $query->setWhere(clone $this->where);
+        foreach ($this->getParameters() as $key => $value) {
+            $query->setParameter($key, $value);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Get model alias
+     * @return string
+     */
+    public function getAlias()
+    {
+        return $this->from->getAlias();
     }
 
     /**
@@ -95,6 +119,15 @@ class UpdateBuilder
         $this->fieldsUpdate[] = new FieldUpdate($this->from->getDao()->getField($field), $update);
 
         return $this;
+    }
+
+    /**
+     * Get fields to udpate
+     * @return FieldUpdate[]
+     */
+    public function getFieldsToUpdate()
+    {
+        return $this->fieldsUpdate;
     }
 
     /**

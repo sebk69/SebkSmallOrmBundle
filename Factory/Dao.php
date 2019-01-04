@@ -43,11 +43,12 @@ class Dao
 
     /**
      * Get dao of a model
-     * @param type $bundle
-     * @param type $model
-     * @return type
+     * @param $bundle
+     * @param $model
+     * @return mixed
      * @throws ConfigurationException
      * @throws DaoNotFoundException
+     * @throws \ReflectionException
      */
     public function get($bundle, $model)
     {
@@ -62,12 +63,16 @@ class Dao
         foreach ($this->config[$bundle]["connections"] as $connectionName => $connectionsParams) {
             $className = $connectionsParams["dao_namespace"].'\\'.$model;
             if (class_exists($className)) {
-                static::$loadedDao[$bundle][$model] = new $className($this->connectionFactory->get($connectionName),
-                    $this, $connectionsParams["model_namespace"], $model,
-                    $bundle,
-                    $this->container);
+                if(!(new \ReflectionClass($className))->isAbstract()) {
+                    static::$loadedDao[$bundle][$model] = new $className($this->connectionFactory->get($connectionName),
+                        $this, $connectionsParams["model_namespace"], $model,
+                        $bundle,
+                        $this->container);
 
-                return static::$loadedDao[$bundle][$model];
+                    return static::$loadedDao[$bundle][$model];
+                } else {
+                    throw new DaoNotFoundException("Dao of model $model of bundle $bundle is abstract");
+                }
             }
         }
 
@@ -79,6 +84,7 @@ class Dao
      * @param $bundle
      * @param $connection
      * @return string
+     * @throws ConfigurationException
      */
     public function getDaoDir($bundle, $connection)
     {
@@ -143,6 +149,7 @@ class Dao
      * @param $bundle
      * @param $model
      * @return string
+     * @throws ConfigurationException
      */
     public function getModelFullClassName($connectionNameOfDao, $bundle, $model)
     {
@@ -179,12 +186,14 @@ class Dao
 
     /**
      * Get file where is defined the dao
+     * @param $connectionNameOfDao
      * @param $bundle
      * @param $model
      * @param bool $evenIfNotFound
      * @return string
      * @throws ConfigurationException
      * @throws DaoNotFoundException
+     * @throws \ReflectionException
      */
     public function getFile($connectionNameOfDao, $bundle, $model, $evenIfNotFound = false)
     {
@@ -202,6 +211,9 @@ class Dao
      * @param $model
      * @param bool $evenIfNotFound
      * @return string
+     * @throws ConfigurationException
+     * @throws DaoNotFoundException
+     * @throws \ReflectionException
      */
     public function getModelFile($connectionNameOfDao, $bundle, $model, $evenIfNotFound = false)
     {
@@ -219,6 +231,7 @@ class Dao
      * @param bool $evenIfNotFound
      * @return string
      * @throws DaoNotFoundException
+     * @throws \ReflectionException
      */
     private function getFileForClass($bundle, $fullClassName, $evenIfNotFound = false)
     {

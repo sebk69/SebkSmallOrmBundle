@@ -11,6 +11,7 @@ use Sebk\SmallOrmBundle\Dao\AbstractDao;
 
 class DeleteBuilder
 {
+    protected $baseDao;
     protected $from;
     protected $where;
     protected $parameters = array();
@@ -22,15 +23,29 @@ class DeleteBuilder
      */
     public function __construct(AbstractDao $baseDao)
     {
-        $baseAlias = $baseDao->getDbTableName();
+        $this->baseDao = $baseDao;
+
+        $baseAlias = str_replace("`", "", $baseDao->getDbTableName());
 
         $this->from = new FromBuilder($baseDao, $baseAlias);
     }
     
     public function __clone() {
-        $this->from = clone $from;
+        $this->from = clone $this->from;
         $this->where = clone $this->where;
         $this->where->setParent($this);
+    }
+
+    /**
+     * Create query builder from this
+     * @return QueryBuilder
+     */
+    public function createQueryBuilder()
+    {
+        $query = $this->baseDao->createQueryBuilder($this->from->getAlias());
+        $query->setWhere(clone $this->where);
+
+        return $query;
     }
 
     /**
