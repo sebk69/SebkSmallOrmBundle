@@ -43,7 +43,9 @@ class DeleteBuilder
     public function createQueryBuilder()
     {
         $query = $this->baseDao->createQueryBuilder($this->from->getAlias());
-        $query->setWhere(clone $this->where);
+        if($this->where !== null) {
+            $query->setWhere(clone $this->where);
+        }
         foreach ($this->getParameters() as $paramName => $paramValue) {
             $query->setParameter($paramName, $paramName);
         }
