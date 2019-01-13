@@ -30,6 +30,6 @@ class ConditionField
 
     public function getSql()
     {
-        return $this->model->getAlias().".".$this->model->getDao()->getField($this->fieldNameInModel)->getDbName();
+        return $this->model->getAlias(true).".".$this->model->getDao()->getField($this->fieldNameInModel)->getDbName();
     }
 }

@@ -228,7 +228,7 @@ class Model implements \JsonSerializable {
      * @param boolean $dependecies
      * @return array
      */
-    public function toArray($dependecies = true, $onlyFields = false)
+    public function toArray($dependecies = true, $onlyFields = false, $fromJsonSeriaze = false)
     {
         $result = array();
 
@@ -248,7 +248,7 @@ class Model implements \JsonSerializable {
             }
         }
 
-        if ($dependecies) {
+        if ($dependecies && !$fromJsonSeriaze) {
             foreach ($this->toOnes as $key => $model) {
                 if ($model !== null) {
                     $result[$key] = $model->toArray($dependecies, $onlyFields);
@@ -263,6 +263,33 @@ class Model implements \JsonSerializable {
                     foreach ($array as $i => $model) {
                         if ($model !== null && $model instanceof Model) {
                             $result[$key][] = $model->toArray($dependecies, $onlyFields);
+                        } elseif ($model !== null) {
+                            $result[$key][] = $model;
+                        } else {
+                            $result[$key][] = null;
+                        }
+                    }
+                } else {
+                    $result[$key] = array();
+                }
+            }
+        }
+
+        if ($dependecies && $fromJsonSeriaze) {
+            foreach ($this->toOnes as $key => $model) {
+                if ($model !== null) {
+                    $result[$key] = $model->jsonSerialize($dependecies, $onlyFields);
+                } else {
+                    $result[$key] = null;
+                }
+            }
+
+            foreach ($this->toManys as $key => $array) {
+                if ($array !== null) {
+                    $result[$key] = array();
+                    foreach ($array as $i => $model) {
+                        if ($model !== null && $model instanceof Model) {
+                            $result[$key][] = $model->jsonSerialize($dependecies, $onlyFields);
                         } elseif ($model !== null) {
                             $result[$key][] = $model;
                         } else {
@@ -300,10 +327,10 @@ class Model implements \JsonSerializable {
      */
     public function jsonSerialize()
     {
-        if (is_array($this->toArray())) {
-            return $this->toUtf8Array($this->toArray());
+        if (is_array($this->toArray(true, false, true))) {
+            return $this->toUtf8Array($this->toArray(true, false, true));
         } else {
-            return $this->toArray();
+            return $this->toArray(false, false, true);
         }
     }
 
