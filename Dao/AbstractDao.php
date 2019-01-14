@@ -332,6 +332,11 @@ abstract class AbstractDao {
      * @throws \Sebk\SmallOrmBundle\QueryBuilder\QueryBuilderException
      */
     public function executeUpdate(UpdateBuilder $query, $executeModelMethods = true) {
+        $model = $this->newModel();
+        if(!method_exists($model, "beforeSave") && !method_exists($model, "afterSave")) {
+            $executeModelMethods = false;
+        }
+
         if (!$executeModelMethods) {
             $this->connection->execute($query->getSql(), $query->getParameters());
 
@@ -359,6 +364,11 @@ abstract class AbstractDao {
      * @throws \Sebk\SmallOrmBundle\QueryBuilder\QueryBuilderException
      */
     public function executeDelete(DeleteBuilder $query, $executeModelMethods = true) {
+        $model = $this->newModel();
+        if(!method_exists($model, "beforeDelete") && !method_exists($model, "afterDelete")) {
+            $executeModelMethods = false;
+        }
+
         if (!$executeModelMethods) {
             $this->connection->execute($query->getSql(), $query->getParameters());
 
