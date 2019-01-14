@@ -54,7 +54,11 @@ class UpdateBuilder
     public function createQueryBuilder()
     {
         $query = $this->baseDao->createQueryBuilder();
-        $query->setWhere(clone $this->where);
+
+        if($this->where !== null) {
+            $query->setWhere(clone $this->where);
+        }
+
         foreach ($this->getParameters() as $key => $value) {
             $query->setParameter($key, $value);
         }
