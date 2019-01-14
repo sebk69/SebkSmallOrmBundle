@@ -42,9 +42,13 @@ class FromBuilder
      * Get model alias in query
      * @return string
      */
-    public function getAlias()
+    public function getAlias($raw = false)
     {
-        return "`".$this->alias."`";
+        if($raw) {
+            return "`" . $this->alias . "`";
+        }
+
+        return $this->alias;
     }
 
     /**

@@ -213,7 +213,7 @@ class QueryBuilder {
      * @throws QueryBuilderException
      */
     public function getRelation($alias = null) {
-        if ($alias === null || $alias == $this->from->getAlias()) {
+        if (empty($alias) || $alias == $this->from->getAlias()) {
             return $this->from;
         }
 
