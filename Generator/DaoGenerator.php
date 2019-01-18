@@ -230,7 +230,7 @@ class [modelName] extends Model
             try {
                 $toBundle = $configCollection->getTableBundle($toOne["toTable"]);
                 $output .= '            ->addToOne("' . static::camelize($toOne["relation"], true) .
-                    '", ["' . static::camelize($toOne["fromField"], true) . '" => "' . static::camelize($toOne["toField"], true) . '"], "' . $this->getDaoClassName($toOne["toTable"]) . '"';
+                    '", ["' . static::camelize($toOne["toField"], true) . '" => "' . static::camelize($toOne["fromField"], true) . '"], "' . $this->getDaoClassName($toOne["toTable"]) . '"';
                 if ($toBundle == $this->bundle) {
                     $output .= ')
 ';
