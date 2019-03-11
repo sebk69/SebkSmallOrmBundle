@@ -105,7 +105,7 @@ class Connection
      */
     public function execute($sql, $params = array(), $retry = false)
     {
-        if ($this->pdo->getAttribute(\PDO::ATTR_SERVER_INFO)=='MySQL server has gone away') {
+        if ($this->dbType == "mysql" && $this->pdo->getAttribute(\PDO::ATTR_SERVER_INFO)=='MySQL server has gone away') {
             $this->connect();
         }
 
