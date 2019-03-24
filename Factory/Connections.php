@@ -33,7 +33,7 @@ class Connections
     /**
      * Get a connection
      * @param type $connectionName
-     * @return type
+     * @return Connection
      * @throws ConfigurationException
      */
     public function get($connectionName = 'default')
