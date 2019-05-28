@@ -218,7 +218,17 @@ class Layer
                 // if file is not hidden, execute it
                 $sql = file_get_contents($scriptsPath . "/" . $scriptFilename);
                 echo "Execute script : ".$scriptFilename."\n";
-                $this->connection->execute($sql);
+
+                $singles = explode(";", $sql);
+                foreach ($singles as $single) {
+                    if(trim($single) != "") {
+                        $status = $this->connection->execute($single);
+
+                        if ($status === false) {
+                            return false;
+                        }
+                    }
+                }
             }
         }
 
