@@ -111,7 +111,7 @@ abstract class AbstractDao {
      * @param string $dbFieldName
      * @param string $modelFieldName
      */
-    protected function addField($dbFieldName, $modelFieldName, $defaultValue = null) {
+    protected function addField($dbFieldName, $modelFieldName, $defaultValue = null, $type = Field::TYPE_STRING, $format = null) {
         $this->fields[] = new Field($dbFieldName, $modelFieldName);
         $this->defaultValues[$modelFieldName] = $defaultValue;
 
@@ -161,8 +161,10 @@ abstract class AbstractDao {
         }
 
         $fields = array();
+        $types = [];
         foreach ($this->fields as $field) {
             $fields[] = lcfirst($field->getModelName());
+            $types[] = ["type" => $field->getType(), "format" => $field->getFormat()];
         }
 
         $toOnes = array();
@@ -175,7 +177,7 @@ abstract class AbstractDao {
             $toManys[] = lcFirst($toManyAlias);
         }
 
-        $model = new $modelClass($this->modelName, $this->modelBundle, $primaryKeys, $fields, $toOnes, $toManys, $this->container);
+        $model = new $modelClass($this->modelName, $this->modelBundle, $primaryKeys, $fields, $types, $toOnes, $toManys, $this->container);
 
         foreach ($this->defaultValues as $property => $defaultValue) {
             $method = "set" . $property;
