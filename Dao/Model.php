@@ -16,6 +16,7 @@ use Sebk\SmallOrmBundle\Validator\AbstractValidator;
 class Model implements \JsonSerializable {
 
     const FIELD_NOT_PERSIST = "FIELD_NOT_PERSIST";
+    const MYSQL_FORMAT_DATETIME = "Y-m-d H:i:s";
 
     private $modelName;
     private $bundle;
@@ -24,6 +25,7 @@ class Model implements \JsonSerializable {
     private $primaryKeys = array();
     private $originalPrimaryKeys = null;
     private $fields = array();
+    private $types = array();
     private $toOnes = array();
     private $toManys = array();
     private $metadata = array();
@@ -37,7 +39,7 @@ class Model implements \JsonSerializable {
      * @param array $primaryKeys
      * @param array $fields
      */
-    public function __construct($modelName, $bundle, $primaryKeys, $fields, $toOnes, $toManys, $container)
+    public function __construct($modelName, $bundle, $primaryKeys, $fields, $types, $toOnes, $toManys, $container)
     {
         $this->modelName = $modelName;
         $this->bundle = $bundle;
@@ -47,8 +49,9 @@ class Model implements \JsonSerializable {
             $this->primaryKeys[$primaryKey] = null;
         }
 
-        foreach ($fields as $field) {
+        foreach ($fields as $i => $field) {
             $this->fields[$field] = null;
+            $this->types[$field] = $types[$i];
         }
 
         foreach ($toOnes as $toOne) {
@@ -94,6 +97,14 @@ class Model implements \JsonSerializable {
                 if ($typeField == "primaryKeys") {
                     return $this->primaryKeys[$name];
                 } elseif ($typeField == "field") {
+                    switch($this->types[$name]["type"]) {
+                        case Field::TYPE_STRING:
+                            return $this->fields[$name];
+                        case Field::TYPE_BOOLEAN:
+                            return $this->fields[$name] == $this->types[$name]["format"][1] ? true : false;
+                        case Field::TYPE_DATETIME:
+                            return \DateTime::createFromFormat($this->types[$name]["format"], $this->fields[$name]);
+                    }
                     return $this->fields[$name];
                 } elseif ($typeField == "toOne") {
                     return $this->toOnes[$name];
@@ -108,7 +119,18 @@ class Model implements \JsonSerializable {
                 if ($typeField == "primaryKeys") {
                     $this->primaryKeys[$name] = $args[0];
                 } elseif ($typeField == "field") {
-                    $this->fields[$name] = $args[0];
+                    switch($this->types[$name]["type"]) {
+                        case Field::TYPE_STRING:
+                            $this->fields[$name] = $args[0];
+                            break;
+                        case Field::TYPE_BOOLEAN:
+                            $this->fields[$name] = $args[0] ? $this->types[$name]["format"][1] : $this->types[$name]["format"][0];
+                            break;
+                        case Field::TYPE_DATETIME:
+                            $this->fields[$name] = $args[0]->format(static::MYSQL_FORMAT_DATETIME);
+                            break;
+                    }
+
                 } elseif ($typeField == "toOne") {
                     $this->toOnes[$name] = $args[0];
                 } elseif ($typeField == "toMany") {
@@ -195,7 +217,17 @@ class Model implements \JsonSerializable {
 
         foreach ($this->fields as $key => $value) {
             if ($value !== null) {
-                $result[$key] = $value;
+                switch ($this->types[$key]["type"]) {
+                    case Field::TYPE_STRING:
+                        $result[$key] = $value;
+                        break;
+                    case Field::TYPE_BOOLEAN:
+                        $result[$key] = $value == $this->types[$name]["format"][1] ? true : false;
+                        break;
+                    case Field::TYPE_DATETIME:
+                        $date = \DateTime::createFromFormat($this->types[$name]["format"], $value);
+                        break;
+                }
             } else {
                 $result[$key] = null;
             }
