@@ -112,7 +112,9 @@ abstract class AbstractDao {
      * @param string $modelFieldName
      */
     protected function addField($dbFieldName, $modelFieldName, $defaultValue = null, $type = Field::TYPE_STRING, $format = null) {
-        $this->fields[] = new Field($dbFieldName, $modelFieldName);
+        $field = new Field($dbFieldName, $modelFieldName);
+        $field->setType($type, $format);
+        $this->fields[] = $field;
         $this->defaultValues[$modelFieldName] = $defaultValue;
 
         return $this;
@@ -180,7 +182,7 @@ abstract class AbstractDao {
         $model = new $modelClass($this->modelName, $this->modelBundle, $primaryKeys, $fields, $types, $toOnes, $toManys, $this->container);
 
         foreach ($this->defaultValues as $property => $defaultValue) {
-            $method = "set" . $property;
+            $method = "raw" . $property;
             $model->$method($defaultValue);
         }
 
@@ -348,7 +350,7 @@ abstract class AbstractDao {
         $result = $this->getResult($query->createQueryBuilder($query->getAlias()));
         foreach ($result as $model) {
             foreach ($query->getFieldsToUpdate() as $fieldUpdate) {
-                $setter = "set".$fieldUpdate->getField()->getModelName();
+                $setter = "raw".$fieldUpdate->getField()->getModelName();
                 $model->$setter($fieldUpdate->getUpdateValue());
             }
             $model->persist();
@@ -444,7 +446,7 @@ abstract class AbstractDao {
         $fields = $this->extractFieldsOfRecord($query, $alias, $records[0]);
 
         foreach ($fields as $property => $value) {
-            $method = "set" . $property;
+            $method = "raw" . $property;
             $model->$method($value);
         }
 
@@ -456,7 +458,7 @@ abstract class AbstractDao {
 
         foreach ($query->getChildRelationsForAlias($alias) as $join) {
             if ($join->getDaoRelation() instanceof ToOneRelation) {
-                $method = "set" . $join->getDaoRelation()->getAlias();
+                $method = "raw" . $join->getDaoRelation()->getAlias();
                 $toOneObjects = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias(), $asCollection, $groupByModels);
                 if ((!$asCollection && count($toOneObjects)) || ($asCollection && $toOneObjects->count())) {
                     $model->$method($toOneObjects[0]);
@@ -466,7 +468,7 @@ abstract class AbstractDao {
             }
 
             if ($join->getDaoRelation() instanceof ToManyRelation && !$groupByModels) {
-                $method = "set" . $join->getDaoRelation()->getAlias();
+                $method = "raw" . $join->getDaoRelation()->getAlias();
                 $toOneObject = $join->getDaoRelation()->getDao()->buildResult($query, $records, $join->getAlias(), $asCollection, $groupByModels);
                 $model->$method($toOneObject);
             }
@@ -500,7 +502,7 @@ abstract class AbstractDao {
         $results = $relation->getDao()->findBy($keys, $dependenciesAliases);
 
         if (count($results) == 1) {
-            $method = "set" . $alias;
+            $method = "raw" . $alias;
             $model->$method($results[0]);
         }
     }
@@ -520,7 +522,7 @@ abstract class AbstractDao {
             $keys[$keyTo] = $model->$method();
         }
 
-        $method = "set" . $alias;
+        $method = "raw" . $alias;
         $model->$method($relation->getDao()->findBy($keys, $dependenciesAliases));
     }
 
@@ -698,7 +700,7 @@ abstract class AbstractDao {
         if ($this->connection->lastInsertId() !== null) {
             foreach ($model->getPrimaryKeys() as $key => $value) {
                 if ($value === null) {
-                    $method = "set" . $key;
+                    $method = "raw" . $key;
                     $model->$method($this->connection->lastInsertId());
                 }
             }
@@ -842,7 +844,7 @@ abstract class AbstractDao {
         $model = $this->newModel();
 
         foreach ($stdClass as $prop => $value) {
-            $method = "set" . $prop;
+            $method = "raw" . $prop;
             if (!is_object($value) && !is_array($value)) {
                 try {
                     $model->$method($value);
