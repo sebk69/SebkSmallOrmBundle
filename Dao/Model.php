@@ -101,9 +101,17 @@ class Model implements \JsonSerializable {
                         case Field::TYPE_STRING:
                             return $this->fields[$name];
                         case Field::TYPE_BOOLEAN:
-                            return $this->fields[$name] == $this->types[$name]["format"][1] ? true : false;
+                            if($this->fields[$name] !== null) {
+                                return $this->fields[$name] == $this->types[$name]["format"][1] ? true : false;
+                            } else {
+                                return null;
+                            }
                         case Field::TYPE_DATETIME:
-                            return \DateTime::createFromFormat($this->types[$name]["format"], $this->fields[$name]);
+                            if($this->fields[$name] !== null) {
+                                return \DateTime::createFromFormat($this->types[$name]["format"], $this->fields[$name]);
+                            } else {
+                                return null;
+                            }
                     }
                     return $this->fields[$name];
                 } elseif ($typeField == "toOne") {
@@ -124,13 +132,35 @@ class Model implements \JsonSerializable {
                             $this->fields[$name] = $args[0];
                             break;
                         case Field::TYPE_BOOLEAN:
-                            $this->fields[$name] = $args[0] ? $this->types[$name]["format"][1] : $this->types[$name]["format"][0];
+                            if($args[0] !== null) {
+                                $this->fields[$name] = $args[0] ? $this->types[$name]["format"][1] : $this->types[$name]["format"][0];
+                            } else {
+                                $this->fields[$name] = null;
+                            }
                             break;
                         case Field::TYPE_DATETIME:
-                            $this->fields[$name] = $args[0]->format(static::MYSQL_FORMAT_DATETIME);
+                            if($args[0] !== null) {
+                                $this->fields[$name] = $args[0]->format(static::MYSQL_FORMAT_DATETIME);
+                            } else {
+                                $this->fields[$name] = null;
+                            }
                             break;
                     }
 
+                } elseif ($typeField == "toOne") {
+                    $this->toOnes[$name] = $args[0];
+                } elseif ($typeField == "toMany") {
+                    $this->toManys[$name] = $args[0];
+                } elseif ($typeField == "metadata") {
+                    $this->metadata[$name] = $args[0];
+                }
+                return $this;
+                break;
+            case "raw":
+                if ($typeField == "primaryKeys") {
+                    $this->primaryKeys[$name] = $args[0];
+                } elseif ($typeField == "field") {
+                    $this->fields[$name] = $args[0];
                 } elseif ($typeField == "toOne") {
                     $this->toOnes[$name] = $args[0];
                 } elseif ($typeField == "toMany") {
@@ -269,10 +299,19 @@ class Model implements \JsonSerializable {
                         $result[$key] = $value;
                         break;
                     case Field::TYPE_BOOLEAN:
-                        $result[$key] = $value == $this->types[$name]["format"][1] ? true : false;
+                        if($value !== null) {
+                            $result[$key] = $value == $this->types[$key]["format"][1] ? true : false;
+                        } else {
+                            $result[$key] = null;
+                        }
                         break;
                     case Field::TYPE_DATETIME:
-                        $date = \DateTime::createFromFormat($this->types[$name]["format"], $value);
+                        if($value !== null) {
+                            $date = \DateTime::createFromFormat(self::MYSQL_FORMAT_DATETIME, $value);
+                            $result[$key] = $date->format($this->types[$key]["format"]);
+                        } else {
+                            $result[$key] = null;
+                        }
                         break;
                 }
             } else {
