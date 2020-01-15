@@ -18,10 +18,9 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode    = $treeBuilder->root('sebk_small_orm');
+        $treeBuilder = new TreeBuilder("sebk_small_orm");
 
-        $rootNode
+        $treeBuilder->getRootNode()
             ->children()
                 ->scalarNode('default_connection')
                     ->defaultValue('default')

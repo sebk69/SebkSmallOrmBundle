@@ -11,6 +11,7 @@ use Sebk\SmallOrmBundle\Generator\Config;
 use Sebk\SmallOrmBundle\Generator\ConfigCollection;
 use Sebk\SmallOrmBundle\Generator\DbGateway;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -19,8 +20,21 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Sebk\SmallOrmBundle\Generator\FileParser;
 use Symfony\Component\Console\Question\Question;
 
-class UpdateDaoCommand extends ContainerAwareCommand
+class UpdateDaoCommand extends Command
 {
+    private $container;
+
+    public function __construct($container)
+    {
+        $this->container = $container;
+
+        parent::__construct();
+    }
+
+    protected function getContainer()
+    {
+        return $this->container;
+    }
 
     protected function configure()
     {
@@ -69,6 +83,8 @@ class UpdateDaoCommand extends ContainerAwareCommand
 
         $output->writeln("Generating completion helper...");
         shell_exec("bin/console sebk:small-orm:add-methods-bloc-comment");
+
+        return 0;
     }
 
     /*
