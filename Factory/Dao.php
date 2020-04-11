@@ -7,6 +7,8 @@
 
 namespace Sebk\SmallOrmBundle\Factory;
 
+use Sebk\SmallOrmBundle\Dao\AbstractDao;
+
 /**
  *
  */
@@ -16,6 +18,7 @@ class Dao
     protected $config;
     protected $container;
     protected static $loadedDao = array();
+    protected $mocked = [];
 
     /**
      * Construct dao factory
@@ -42,18 +45,46 @@ class Dao
     }
 
     /**
+     * Mock a dao
+     * @param string $bundle
+     * @param string $dao
+     * @param string $class
+     * @return Dao
+     */
+    public function mock(string $bundle, string $dao, string $class): Dao
+    {
+        $this->mocked[$bundle."*".$dao] = $class;
+
+        return $this;
+    }
+
+    /**
      * Get dao of a model
-     * @param $bundle
-     * @param $model
-     * @return mixed
+     * @param string $bundle
+     * @param string $model
+     * @return AbstractDao
      * @throws ConfigurationException
      * @throws DaoNotFoundException
      * @throws \ReflectionException
      */
-    public function get($bundle, $model)
+    public function get(string $bundle, string $model): AbstractDao
     {
         if (!isset($this->config[$bundle])) {
             throw new ConfigurationException("Bundle '$bundle' is not configured");
+        }
+
+        // Dao mocked ?
+        if(isset($this->mocked[$bundle."*".$model])) {
+            // return new instance of mock
+            $class = $this->mocked[$bundle."*".$model];
+            return new $class(
+                $this->container->get("sebk_small_orm_connections")->get(),
+                $this->container->get("sebk_small_orm_dao"),
+                $this->container->get("sebk_small_orm_dao")->getModelNamespace("default", $bundle),
+                $model,
+                $bundle,
+                $this->container
+            );
         }
 
         if (isset(static::$loadedDao[$bundle][$model])) {
