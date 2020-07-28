@@ -108,8 +108,14 @@ abstract class AbstractDao {
     }
 
     /**
-     * @param string $dbFieldName
-     * @param string $modelFieldName
+     * Add a field
+     * @param $dbFieldName
+     * @param $modelFieldName
+     * @param null $defaultValue
+     * @param string $type
+     * @param null $format
+     * @return $this
+     * @throws \Exception
      */
     protected function addField($dbFieldName, $modelFieldName, $defaultValue = null, $type = Field::TYPE_STRING, $format = null) {
         $field = new Field($dbFieldName, $modelFieldName);

@@ -15,6 +15,7 @@ class Field
     const TYPE_STRING = "TYPE_STRING";
     const TYPE_DATETIME = "TYPE_DATETIME";
     const TYPE_BOOLEAN = "TYPE_BOOLEAN";
+    const TYPE_NUMBER = "TYPE_NUMBER";
 
     protected $dbName;
     protected $modelName;
@@ -57,6 +58,7 @@ class Field
     public function setType($type, $format = null)
     {
         switch($type) {
+            case static::TYPE_NUMBER:
             case static::TYPE_STRING:
                 break;
             case static::TYPE_BOOLEAN:
