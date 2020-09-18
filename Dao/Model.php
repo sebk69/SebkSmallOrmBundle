@@ -20,7 +20,7 @@ class Model implements \JsonSerializable {
 
     private $modelName;
     private $bundle;
-    protected $container;
+    public $container;
     protected $validator;
     private $primaryKeys = array();
     private $originalPrimaryKeys = null;
