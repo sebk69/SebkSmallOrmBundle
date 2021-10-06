@@ -10,6 +10,7 @@ namespace Sebk\SmallOrmBundle\Factory;
 
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Class FakeContainer
@@ -17,10 +18,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class FakeContainer implements ContainerInterface
 {
-    const DAO_FACTORY_SERVICE = "sebk_small_orm_dao";
+    const SMALL_ORM_BUNDLE_SERVICES = __DIR__ . "/../Resources/config/services.yml";
 
-    /** @var ContainerInterface $container */
-    protected $container;
+    protected $isolated = false;
+    protected $servicesDefinition = [];
     /** @var array $isolatedService */
     protected $isolatedService = [];
     /** @var array $isolatedParameters */
@@ -32,13 +33,11 @@ class FakeContainer implements ContainerInterface
      */
     public function __construct(ContainerInterface $container)
     {
-        $this->container = $container;
+        foreach ($container->getParameterBag()->all() as $id => $value) {
+            $this->setParameter($id, $value);
+        }
 
-        $this->isolatedService[self::DAO_FACTORY_SERVICE] = new Dao(
-            $container->get("sebk_small_orm_connections"),
-            $container->getParameter("sebk_small_orm.bundles"),
-            $this
-        );
+        $this->addServicesYaml(self::SMALL_ORM_BUNDLE_SERVICES);
     }
 
     /**
@@ -46,34 +45,16 @@ class FakeContainer implements ContainerInterface
      */
     public function isolate()
     {
-        $this->container = null;
+        $this->isolated = true;
     }
 
     /**
      * Add a service to use it in isolated environment
      * @param $id
      */
-    public function addServiceForIsolation($id)
+    public function addServiceForIsolation($id, $class, $parameters = [])
     {
-        if ($id == self::DAO_FACTORY_SERVICE) {
-            throw new \Exception("Can't override dao factory in fake container");
-        }
-
-        $this->isolatedService[$id] = $this->container->get($id);
-    }
-
-    /**
-     * Add a dao for isolated environment
-     * @param $bundle
-     * @param $model
-     * @return mixed
-     * @throws ConfigurationException
-     * @throws DaoNotFoundException
-     * @throws \ReflectionException
-     */
-    public function addDaoForIsolation($bundle, $model)
-    {
-        return $this->isolatedService[self::DAO_FACTORY_SERVICE]->get($bundle, $model);
+        $this->servicesDefinition[$id] = ["class" => $class, "params" => $parameters];
     }
 
     /**
@@ -97,7 +78,7 @@ class FakeContainer implements ContainerInterface
             throw new \Exception("Can't override dao factory in fake container");
         }
 
-        if ($this->container !== null) {
+        if (!$this->isolated) {
             $this->container->set($id, $service);
             $this->addServiceForIsolation($id, $service);
         } else {
@@ -114,15 +95,36 @@ class FakeContainer implements ContainerInterface
      */
     public function get($id, $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE)
     {
-        if ($this->container === null) {
-            if (isset($this->isolatedService[$id])) {
-                return $this->isolatedService[$id];
-            } else {
-                throw new \Exception("This service has not been added for isolation");
-            }
-        } else {
+        if (!$this->isolated) {
             throw new \Exception("The fake container has not been isolated yet. Impossible to get service");
         }
+
+        if ($id == "service_container") {
+            return $this;
+        }
+
+        if (isset($this->isolatedService[$id])) {
+            return $this->isolatedService[$id];
+        }
+
+        if (isset($this->servicesDefinition[$id])) {
+            $class = $this->servicesDefinition[$id]["class"];
+            foreach ($this->servicesDefinition[$id]["params"] as $paramDefinition) {
+                if (substr($paramDefinition, 0, 1) == "%" && substr($paramDefinition, strlen($paramDefinition) - 1, 1) == "%") {
+                    $params[] = $this->getParameter(substr($paramDefinition, 1, strlen($paramDefinition) - 2));
+                } else if ($paramDefinition == "@sebk_small_orm_dao") {
+                    $params[] = $this->get("sebk_small_orm_dao");
+                } else if (substr($paramDefinition, 0, 1) == "@") {
+                    $params[] = $this->get(substr($paramDefinition, 1));
+                }
+            }
+
+            $this->isolatedService[$id] = new $class(...$params);
+
+            return $this->isolatedService[$id];
+        }
+
+        throw new \Exception("This service has not been added for isolation ($id)");
     }
 
     /**
@@ -173,5 +175,51 @@ class FakeContainer implements ContainerInterface
     public function setParameter($name, $value)
     {
         $this->isolatedParameters[$name] = $value;
+    }
+
+    /**
+     * Parse a file
+     * @param $filepath
+     * @throws \Exception
+     */
+    public function addServicesYaml($filepath)
+    {
+        // Is array of files
+        if (is_array($filepath)) {
+            // Add all
+            foreach ($filepath as $item) {
+                $this->addServicesYaml($item);
+            }
+            return;
+        }
+
+        // Check file exists
+        if (!is_file($filepath)) {
+            throw new \Exception("FakeContainer::addServicesYaml : File not found ($filepath)");
+        }
+
+        // Parse yaml
+        $parsedServices = Yaml::parse(file_get_contents($filepath));
+
+        // Check service entry
+        if (!isset($parsedServices["services"])) {
+            throw new \Exception("FakeContainer::addServicesYaml : File is not a service yaml file ($filepath)");
+        }
+
+        // Foreach services entry
+        foreach ($parsedServices["services"] as $id => $parsedService) {
+            // If class entry
+            if (isset($parsedService["class"])) {
+                // Get arguments
+                $class = $parsedService["class"];
+                $parms = [];
+                if (isset($parsedService["arguments"])) {
+                    $parms = $parsedService["arguments"];
+                }
+
+                // And add service to fake container
+                $this->addServiceForIsolation($id, $class, $parms);
+            }
+        }
     }
 }

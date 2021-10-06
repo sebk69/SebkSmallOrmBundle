@@ -12,6 +12,9 @@
             "email": "seb@ktoi.fr"
         }
     ],
+
+    "require": {
+    },
     "require-dev": {
     }
 }
