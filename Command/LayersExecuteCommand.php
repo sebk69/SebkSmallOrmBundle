@@ -7,17 +7,13 @@
 
 namespace Sebk\SmallOrmBundle\Command;
 
-use Sebk\SmallOrmBundle\Generator\Config;
-use Sebk\SmallOrmBundle\Generator\DbGateway;
-use Sebk\SmallOrmBundle\Layers\Layers;
+use Sebk\SmallOrmCore\Layers\Layers;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-
-use Sebk\SmallOrmBundle\Generator\FileParser;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\DependencyInjection\Container;
 

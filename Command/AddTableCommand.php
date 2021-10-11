@@ -7,18 +7,16 @@
 
 namespace Sebk\SmallOrmBundle\Command;
 
-use Sebk\SmallOrmBundle\Factory\Connections;
-use Sebk\SmallOrmBundle\Generator\Config;
-use Sebk\SmallOrmBundle\Generator\DaoGenerator;
-use Sebk\SmallOrmBundle\Generator\DbGateway;
+use Sebk\SmallOrmCore\Factory\Connections;
+use Sebk\SmallOrmCore\Generator\Config;
+use Sebk\SmallOrmCore\Generator\DaoGenerator;
+use Sebk\SmallOrmCore\Generator\DbGateway;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-
-use Sebk\SmallOrmBundle\Generator\FileParser;
 use Symfony\Component\Console\Question\Question;
 
 class AddTableCommand extends Command
