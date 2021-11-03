@@ -5,7 +5,7 @@ Small ORM for symfony app
 
 Require the bundle with composer:
 ```
-composer require sebk/small-orm-bundle "~1.0"
+composer require sebk/small-orm-bundle "~2.0"
 ```
 
 Register the bundle in `app/AppKernel.php`:
