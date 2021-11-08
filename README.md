@@ -22,4 +22,4 @@ public function registerBundles()
 
 ## Documentation
 
-See [documentation]: https://small-iceberg.dev/index.php/SmallOrmBundle
+See [documentation](https://github.com/sebk69/small-orm-doc)
