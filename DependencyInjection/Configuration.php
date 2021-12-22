@@ -31,7 +31,7 @@ class Configuration implements ConfigurationInterface
                             ->scalarNode('type')
                                 ->isRequired()
                                 ->validate()
-                                ->ifNotInArray(array('swoole-mysql', 'mysql', 'none'))
+                                ->ifNotInArray(array('swoole-mysql', 'swoole-redis', 'mysql', 'none'))
                                     ->thenInvalid('Invalid database driver "%s"')
                                 ->end()
                             ->end()
