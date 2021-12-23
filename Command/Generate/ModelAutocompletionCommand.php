@@ -1,11 +1,11 @@
 <?php
 /**
  * This file is a part of SebkSmallOrmBundle
- * Copyright 2015-2017 - Sébastien Kus
+ * Copyright 2021 - Sébastien Kus
  * Under GNU GPL V3 licence
  */
 
-namespace Sebk\SmallOrmBundle\Command;
+namespace Sebk\SmallOrmBundle\Command\Generate;
 
 use Sebk\SmallOrmCore\Generator\DaoGenerator;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -18,7 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Sebk\SmallOrmBundle\Generator\FileParser;
 use Symfony\Component\Console\Question\Question;
 
-class MethodsBlocCommentCommand extends Command
+class ModelAutocompletionCommand extends Command
 {
     private $container;
 
@@ -37,8 +37,11 @@ class MethodsBlocCommentCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('sebk:small-orm:add-methods-bloc-comment')
+            ->setName('sebk:small-orm:generate:model-autocompletion')
             ->setDescription('Add methods bloc comment in model')
+            ->addOption("connection", null, InputOption::VALUE_REQUIRED, "Connection to retreive table", null)
+            ->addOption("bundle", null, InputOption::VALUE_REQUIRED, "Bundle in which the DAO will be created", null)
+            ->addOption("dao", null, InputOption::VALUE_REQUIRED, "DAO name (all daos if not specified) ", "all")
         ;
     }
 
@@ -61,20 +64,26 @@ class MethodsBlocCommentCommand extends Command
             }
         }
 
-        // ask user...
-        $helper = $this->getHelper('question');
+        // get connection
+        if ($input->getOption("connection") == null) {
+            $connectionName = $defaultConnection;
+        } else {
+            $connectionName = $input->getOption("connection");
+        }
 
-        // for connection...
-        $question = new Question('Connection ['.$defaultConnection.'] ? ', $defaultConnection);
-        $connectionName = $helper->ask($input, $output, $question);
+        // get bundle
+        if ($input->getOption("bundle") == null) {
+            $bundle = $defaultBundle;
+        } else {
+            $bundle = $input->getOption("bundle");
+        }
 
-        // bundle...
-        $question = new Question('Bundle ['.$defaultBundle.'] ? ', $defaultBundle);
-        $bundle = $helper->ask($input, $output, $question);
-
-        // and table
-        $question = new Question('Dao [all] ? ', 'all');
-        $dao = $helper->ask($input, $output, $question);
+        // and dao
+        if ($input->getOption("dao") == null) {
+            $dao = "all";
+        } else {
+            $dao = $input->getOption("dao");
+        }
 
         /** @var DaoGenerator $daoGenrator */
         $daoGenrator = $this->getContainer()->get("sebk_small_orm_generator");

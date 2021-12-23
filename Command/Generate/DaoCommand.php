@@ -1,11 +1,11 @@
 <?php
 /**
  * This file is a part of SebkSmallOrmBundle
- * Copyright 2015-2017 - Sébastien Kus
+ * Copyright 2021 - Sébastien Kus
  * Under GNU GPL V3 licence
  */
 
-namespace Sebk\SmallOrmBundle\Command;
+namespace Sebk\SmallOrmBundle\Command\Generate;
 
 use Sebk\SmallOrmCore\Factory\Connections;
 use Sebk\SmallOrmCore\Generator\Config;
@@ -19,7 +19,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 
-class AddTableCommand extends Command
+class DaoCommand extends Command
 {
     private $bundles;
     private $connections;
@@ -39,8 +39,11 @@ class AddTableCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('sebk:small-orm:add-table')
+            ->setName('sebk:small-orm:generate:dao')
             ->setDescription('Add dao for database table')
+            ->addOption("connection", null, InputOption::VALUE_REQUIRED, "Connection to retreive table", null)
+            ->addOption("bundle", null, InputOption::VALUE_REQUIRED, "Bundle in which the DAO will be created", null)
+            ->addOption("table", null, InputOption::VALUE_REQUIRED, "Table for DAO ('all' for all database tables) ", null)
         ;
     }
 
@@ -63,20 +66,26 @@ class AddTableCommand extends Command
             }
         }
 
-        // ask user...
-        $helper = $this->getHelper('question');
+        // get connection
+        if ($input->getOption("connection") == null) {
+            $connectionName = $defaultConnection;
+        } else {
+            $connectionName = $input->getOption("connection");
+        }
 
-        // for connection...
-        $question = new Question('Connection ['.$defaultConnection.'] ? ', $defaultConnection);
-        $connectionName = $helper->ask($input, $output, $question);
+        // get bundle
+        if ($input->getOption("bundle") == null) {
+            $bundle = $defaultBundle;
+        } else {
+            $bundle = $input->getOption("bundle");
+        }
 
-        // bundle...
-        $question = new Question('Bundle ['.$defaultBundle.'] ? ', $defaultBundle);
-        $bundle = $helper->ask($input, $output, $question);
-
-        // and table
-        $question = new Question('Database table [all] ? ', 'all');
-        $dbTableName = $helper->ask($input, $output, $question);
+        // get table
+        if ($input->getOption("table") == null) {
+            throw new \Exception("The table must be specified ('all' for create DAO for all tables)");
+        } else {
+            $dbTableName = $input->getOption("table");
+        }
 
         // add selected tables
         if($dbTableName != "all") {
@@ -93,9 +102,11 @@ class AddTableCommand extends Command
         }
 
         $output->writeln("Generating completion helper...");
-        shell_exec("bin/console sebk:small-orm:add-methods-bloc-comment");
+        shell_exec("bin/console sebk:small-orm:generate:model-autocompletion " .
+            "--connection " . $connectionName . " --bundle " . $bundle . " " .
+            ($dbTableName != 'all' ? " --dao " . $this->daoGenerator->getDaoClassName($dbTableName) : ""));
 
-        return 0;
+        return static::SUCCESS;
     }
 
     /*
