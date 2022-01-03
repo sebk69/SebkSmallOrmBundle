@@ -19,9 +19,12 @@ services:
         class: Sebk\SmallOrmCore\Layers\Layers
         arguments: ["@sebk_small_orm_connections", "%sebk_small_orm.bundles%", "@service_container"]
     # Autowire aliases
-    Sebk\SmallOrmCore\Factory\Dao: "@sebk_small_orm_dao"
-    Sebk\SmallOrmCore\Factory\Connections: "@sebk_small_orm_connections"
-    Sebk\SmallOrmCore\Factory\Validator: "@sebk_small_orm_validator"
+    Sebk\SmallOrmCore\Factory\Dao:
+        alias: "sebk_small_orm_dao"
+    Sebk\SmallOrmCore\Factory\Connections:
+        alias: "sebk_small_orm_connections"
+    Sebk\SmallOrmCore\Factory\Validator:
+        alias: "sebk_small_orm_validator"
     # Commands
     Sebk\SmallOrmBundle\Command\Generate\DaoCommand:
         public: true
