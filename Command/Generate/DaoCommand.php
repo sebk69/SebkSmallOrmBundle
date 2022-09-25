@@ -7,10 +7,12 @@
 
 namespace Sebk\SmallOrmBundle\Command\Generate;
 
+use Psr\Container\ContainerInterface;
 use Sebk\SmallOrmCore\Factory\Connections;
 use Sebk\SmallOrmCore\Generator\Config;
 use Sebk\SmallOrmCore\Generator\DaoGenerator;
 use Sebk\SmallOrmCore\Generator\DbGateway;
+use Sebk\SmallOrmCore\Generator\Selector;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -21,14 +23,16 @@ use Symfony\Component\Console\Question\Question;
 
 class DaoCommand extends Command
 {
-    private $bundles;
+    private $selectors;
+    private $folders;
     private $connections;
     private $daoGenerator;
     private $container;
 
-    public function __construct(array $bundles, Connections $connections, DaoGenerator $daoGenerator, $container)
+    public function __construct(array $generatorConfig, Connections $connections, DaoGenerator $daoGenerator, ContainerInterface $container)
     {
-        $this->bundles = $bundles;
+        $this->selectors = $generatorConfig['selectors'];
+        $this->folders = $generatorConfig['folders'];
         $this->connections = $connections;
         $this->daoGenerator = $daoGenerator;
         $this->container = $container;
@@ -41,8 +45,8 @@ class DaoCommand extends Command
         $this
             ->setName('sebk:small-orm:generate:dao')
             ->setDescription('Add dao for database table')
-            ->addOption("connection", null, InputOption::VALUE_REQUIRED, "Connection to retreive table", null)
-            ->addOption("bundle", null, InputOption::VALUE_REQUIRED, "Bundle in which the DAO will be created", null)
+            ->addOption("connection", null, InputOption::VALUE_REQUIRED, "Connection to retreive table", 'default')
+            ->addOption("selector", null, InputOption::VALUE_REQUIRED, "Selector to determine namespaces", null)
             ->addOption("table", null, InputOption::VALUE_REQUIRED, "Table for DAO ('all' for all database tables) ", null)
         ;
     }
@@ -53,17 +57,9 @@ class DaoCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        // get first bundle as default
-        foreach($this->bundles as $defaultBundle => $parms) {
+        // get first selector as default
+        foreach($this->selectors as $defaultSelector => $parms) {
             break;
-        }
-
-        // get default connection
-        $defaultConnection = null;
-        foreach($parms["connections"] as $connection => $content) {
-            if($defaultConnection === null || $connection == "default") {
-                $defaultConnection = $connection;
-            }
         }
 
         // get connection
@@ -73,11 +69,11 @@ class DaoCommand extends Command
             $connectionName = $input->getOption("connection");
         }
 
-        // get bundle
-        if ($input->getOption("bundle") == null) {
-            $bundle = $defaultBundle;
+        // get selector
+        if ($input->getOption("selector") == null) {
+            $selector = new Selector($this->folders, $this->selectors[$defaultSelector]);
         } else {
-            $bundle = $input->getOption("bundle");
+            $selector = new Selector($this->folders, $this->selectors[$input->getOption("selector")]);
         }
 
         // get table
@@ -89,22 +85,17 @@ class DaoCommand extends Command
 
         // add selected tables
         if($dbTableName != "all") {
-            $this->addTable($connectionName, $bundle, $dbTableName);
+            $this->addTable($connectionName, $selector, $dbTableName);
         } else {
             $connection = $this->connections->get($connectionName);
             $dbGateway = new DbGateway($connection);
 
             foreach($dbGateway->getTables() as $dbTableName) {
                 if($dbTableName != "_small_orm_layers") {
-                    $this->addTable($connectionName, $bundle, $dbTableName);
+                    $this->addTable($connectionName, $selector, $dbTableName);
                 }
             }
         }
-
-        $output->writeln("Generating completion helper...");
-        shell_exec("bin/console sebk:small-orm:generate:model-autocompletion " .
-            "--connection " . $connectionName . " --bundle " . $bundle . " " .
-            ($dbTableName != 'all' ? " --dao " . $this->daoGenerator->getDaoClassName($dbTableName) : ""));
 
         return static::SUCCESS;
     }
@@ -115,13 +106,11 @@ class DaoCommand extends Command
      * @param $bundle
      * @param $dbTableName
      */
-    protected function addTable($connectionName, $bundle, $dbTableName)
+    protected function addTable(string $connectionName, Selector $selector, string $dbTableName)
     {
         /** @var DaoGenerator $daoGenrator */
         $daoGenrator = $this->daoGenerator;
-        $daoGenrator->setParameters($connectionName, $bundle);
+        $daoGenrator->setParameters($connectionName, $selector);
         $daoGenrator->recomputeFilesForTable($dbTableName);
-        $config = new Config($bundle, $connectionName, $this->container);
-        $config->addTable($dbTableName);
     }
 }

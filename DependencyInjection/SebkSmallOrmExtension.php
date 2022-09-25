@@ -31,6 +31,6 @@ class SebkSmallOrmExtension extends Extension
             $config['default_connection']);
         $container->setParameter('sebk_small_orm.connexions',
             $config['connections']);
-        $container->setParameter('sebk_small_orm.bundles', $config['bundles']);
+        $container->setParameter('sebk_small_orm.generator', $config['generator']);
     }
 }
