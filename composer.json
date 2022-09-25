@@ -14,7 +14,7 @@
     ],
 
     "require": {
-        "sebk/small-orm-core": "1.*"
+        "sebk/small-orm-core": "3.x-dev"
     },
     "require-dev": {
     }
