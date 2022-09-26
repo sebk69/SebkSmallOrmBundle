@@ -12,9 +12,9 @@ services:
     sebk_small_orm_generator:
         class: Sebk\SmallOrmCore\Generator\DaoGenerator
         arguments: ["@sebk_small_orm_connections", "@service_container", "%sebk_small_orm.generator%"]
-    #sebk_small_orm_layers:
-    #    class: Sebk\SmallOrmCore\Layers\Layers
-    #    arguments: ["@sebk_small_orm_connections", "%sebk_small_orm.bundles%", "@service_container"]
+    sebk_small_orm_layers:
+        class: Sebk\SmallOrmCore\Layers\Layers
+        arguments: ["@sebk_small_orm_connections", "%sebk_small_orm.generator%", "@service_container"]
     # Autowire aliases
     Sebk\SmallOrmCore\Factory\Dao:
         alias: "sebk_small_orm_dao"
@@ -25,10 +25,10 @@ services:
         public: true
         arguments: ["%sebk_small_orm.generator%", "@sebk_small_orm_connections", "@sebk_small_orm_generator", "@service_container"]
         tags: [console.command]
-    #Sebk\SmallOrmBundle\Command\LayersExecuteCommand:
-    #    public: true
-    #    arguments: ["@sebk_small_orm_layers"]
-    #    tags: [console.command]
+    Sebk\SmallOrmBundle\Command\Generate\DatabaseCommand:
+        public: true
+        arguments: ["@sebk_small_orm_layers"]
+        tags: [console.command]
     Sebk\SmallOrmBundle\Command\UpdateDaoCommand:
         public: true
         arguments: ["@service_container"]

@@ -5,7 +5,7 @@
  * Under GNU GPL V3 licence
  */
 
-namespace Sebk\SmallOrmBundle\Command;
+namespace Sebk\SmallOrmBundle\Command\Generate;
 
 use Sebk\SmallOrmCore\Layers\Layers;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -17,7 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\DependencyInjection\Container;
 
-class LayersExecuteCommand extends Command
+class DatabaseCommand extends Command
 {
     private $layersService;
 
@@ -31,8 +31,8 @@ class LayersExecuteCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('sebk:small-orm:layers-execute')
-            ->setDescription('Execute missing layers')
+            ->setName('sebk:small-orm:generate:database')
+            ->setDescription('Execute missing layers to database')
         ;
     }
 
