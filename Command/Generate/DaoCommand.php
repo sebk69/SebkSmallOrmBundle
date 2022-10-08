@@ -62,13 +62,6 @@ class DaoCommand extends Command
             break;
         }
 
-        // get connection
-        if ($input->getOption("connection") == null) {
-            $connectionName = $defaultConnection;
-        } else {
-            $connectionName = $input->getOption("connection");
-        }
-
         // get selector
         if ($input->getOption("selector") == null) {
             $selector = new Selector($this->folders, $this->selectors[$defaultSelector]);
@@ -76,41 +69,47 @@ class DaoCommand extends Command
             $selector = new Selector($this->folders, $this->selectors[$input->getOption("selector")]);
         }
 
-        // get table
-        if ($input->getOption("table") == null) {
-            throw new \Exception("The table must be specified ('all' for create DAO for all tables)");
+        // get connection
+        if ($input->getOption("connection") == null) {
+            if ($this->selectors->getSelection()->getConnection() == null) {
+                $connectionName = $defaultConnection;
+            } else {
+                $connectionName = $this->selectors->getSelection()->getConnection();
+            }
         } else {
-            $dbTableName = $input->getOption("table");
+            $connectionName = $input->getOption("connection");
         }
 
-        // add selected tables
-        if($dbTableName != "all") {
-            $this->addTable($connectionName, $selector, $dbTableName);
-        } else {
-            $connection = $this->connections->get($connectionName);
-            $dbGateway = new DbGateway($connection);
+        // get table
+        $table = $input->getOption("table");
 
-            foreach($dbGateway->getTables() as $dbTableName) {
-                if($dbTableName != "_small_orm_layers") {
-                    $this->addTable($connectionName, $selector, $dbTableName);
-                }
+        // add selected tables
+        $dbGateway = new DbGateway($this->connections->get($connectionName));
+
+        $tablesToAdd = [];
+        foreach($dbGateway->getTables() as $dbTableName) {
+            if ($selector->getConnection() != null && $selector->getConnection() != $connectionName) {
+                continue;
             }
+            if (!$selector->isTableInSelection($dbTableName)) {
+                continue;
+            }
+            if ($table != null && $dbTableName != $table) {
+                continue;
+            }
+            $tablesToAdd[] = $dbTableName;
+        }
+
+        $this->daoGenerator->setParameters($connectionName, $selector);
+
+        foreach ($tablesToAdd as $table) {
+            $this->daoGenerator->createDaoFile($table);
+        }
+        foreach ($tablesToAdd as $table) {
+            $this->daoGenerator->recomputeFilesForTable($table);
         }
 
         return static::SUCCESS;
     }
 
-    /*
-     * Add table to bundle
-     * @param $connectionName
-     * @param $bundle
-     * @param $dbTableName
-     */
-    protected function addTable(string $connectionName, Selector $selector, string $dbTableName)
-    {
-        /** @var DaoGenerator $daoGenrator */
-        $daoGenrator = $this->daoGenerator;
-        $daoGenrator->setParameters($connectionName, $selector);
-        $daoGenrator->recomputeFilesForTable($dbTableName);
-    }
 }
