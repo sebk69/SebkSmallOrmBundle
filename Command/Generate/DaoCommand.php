@@ -43,7 +43,7 @@ class DaoCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('sebk:small-orm:generate:dao')
+            ->setName('small-orm:generate:dao')
             ->setDescription('Add dao for database table')
             ->addOption("connection", null, InputOption::VALUE_REQUIRED, "Connection to retreive table", 'default')
             ->addOption("selector", null, InputOption::VALUE_REQUIRED, "Selector to determine namespaces", null)

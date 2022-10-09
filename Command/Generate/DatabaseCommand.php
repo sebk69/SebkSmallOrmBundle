@@ -31,7 +31,7 @@ class DatabaseCommand extends Command
     protected function configure()
     {
         $this
-            ->setName('sebk:small-orm:generate:database')
+            ->setName('small-orm:generate:database')
             ->setDescription('Execute missing layers to database')
         ;
     }
