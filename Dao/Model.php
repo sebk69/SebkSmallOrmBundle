@@ -80,6 +80,69 @@ class Model implements \JsonSerializable {
     }
 
     /**
+     * Called when clone to clone subobjects
+     * @return void
+     * @throws ModelException
+     */
+    public function __clone()
+    {
+        // Create new model based on this
+        $stdClass = json_decode(json_encode($this->toArray()));
+        $clone = $this->getDao()->makeModelFromStdClass($stdClass);
+
+        // Reassign this subobjects
+        $this->primaryKeys = $clone->primaryKeys;
+        $this->originalPrimaryKeys = $clone->originalPrimaryKeys;
+        $this->fields = $clone->fields;
+        $this->types = $clone->types;
+        $this->toOnes = $clone->toOnes;
+        $this->toManys = $clone->toManys;
+        $this->fromDb = $clone->fromDb;
+        $this->altered = $clone->altered;
+        $this->backup = clone $this->backup;
+        $this->validator = null;
+        $this->metadata = $clone->metadata;
+    }
+
+    /**
+     * Duplicate model and set id for persist new record
+     * @param bool $withDependencies
+     * @return Model
+     * @throws ModelException
+     */
+    public function duplicateForPersist(bool $withDependencies = true)
+    {
+        // Duplicate model
+        $stdClass = $this->getBackup();
+        $clone = $this->getDao()->makeModelFromStdClass($stdClass);
+
+        // Empty primary keys
+        foreach ($this->primaryKeys as $key => $value) {
+            $this->primaryKeys[$key] = null;
+        }
+
+        // Set as not from db
+        $clone->fromDb = false;
+
+        // Duplicate dependencies too for persist them as new
+        if ($withDependencies) {
+            /** @var Model $toOne */
+            foreach ($this->toOnes as $key => $toOne) {
+                $this->toOnes[$key] = $toOne->cloneToPersist($withDependencies);
+            }
+            foreach ($this->toManys as $key => $toMany) {
+                /** @var Model $model */
+                foreach ($toMany as $keyModel => $model) {
+                    $this->toManys[$key][$keyModel] = $model->cloneToPersist($withDependencies);
+                }
+            }
+        }
+
+        // return duplicated object
+        return $clone;
+    }
+
+    /**
      * Magic method to access getters and setters
      * @param $method
      * @param $args
@@ -415,7 +478,7 @@ class Model implements \JsonSerializable {
 
     /**
      * Get the DAO of model
-     * @return mixed
+     * @return AbstractDao
      */
     public function getDao()
     {
@@ -467,29 +530,33 @@ class Model implements \JsonSerializable {
      */
     public function backup($deeply = false, $dry = false)
     {
-        // save object
-        $json = json_encode($this->toArray(false));
-        $backup = json_decode($json);
+        if ($dry && $deeply) {
+            $backup = json_decode(json_encode($this->toArray()));
+        } else {
+            // save object
+            $json = json_encode($this->toArray(false));
+            $backup = json_decode($json);
 
-        if(!$dry) {
-            if(isset($backup->backup)) {
-                unset($backup->backup);
-            }
-
-            $this->backup = $backup;
-
-            // save dependencies
-            if($deeply) {
-                foreach ($this->toOnes as $key => $model) {
-                    if($model !== null) {
-                        $model->backup();
-                    }
+            if (!$dry) {
+                if (isset($backup->backup)) {
+                    unset($backup->backup);
                 }
 
-                foreach ($this->toManys as $key => $array) {
-                    if ($array !== null) {
-                        foreach ($array as $model) {
+                $this->backup = $backup;
+
+                // save dependencies
+                if ($deeply) {
+                    foreach ($this->toOnes as $key => $model) {
+                        if ($model !== null) {
                             $model->backup();
+                        }
+                    }
+
+                    foreach ($this->toManys as $key => $array) {
+                        if ($array !== null) {
+                            foreach ($array as $model) {
+                                $model->backup();
+                            }
                         }
                     }
                 }
