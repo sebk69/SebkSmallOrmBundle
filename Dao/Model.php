@@ -99,7 +99,7 @@ class Model implements \JsonSerializable {
         $this->toManys = $clone->toManys;
         $this->fromDb = $clone->fromDb;
         $this->altered = $clone->altered;
-        $this->backup = clone $this->backup;
+        $this->backup = is_object($this->backup) ? clone $this->backup : $this->backup;
         $this->validator = null;
         $this->metadata = $clone->metadata;
     }
