@@ -1,6 +1,14 @@
 # SmallOrmBundle
 Small ORM for symfony app
 
+# Migrated
+
+This lib has been migrated to [framagit](https://framagit.org/small) project.
+
+A new composer package is available at https://packagist.org/packages/small/orm-bundle
+
+Future commits will be done on framagit.
+
 ## Install
 
 Require the bundle with composer:
