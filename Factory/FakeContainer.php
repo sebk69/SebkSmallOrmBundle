@@ -109,6 +109,7 @@ class FakeContainer implements ContainerInterface
 
         if (isset($this->servicesDefinition[$id])) {
             $class = $this->servicesDefinition[$id]["class"];
+            $params = [];
             foreach ($this->servicesDefinition[$id]["params"] as $paramDefinition) {
                 if (substr($paramDefinition, 0, 1) == "%" && substr($paramDefinition, strlen($paramDefinition) - 1, 1) == "%") {
                     $params[] = $this->getParameter(substr($paramDefinition, 1, strlen($paramDefinition) - 2));
