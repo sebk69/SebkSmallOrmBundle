@@ -16,6 +16,7 @@ use Sebk\SmallOrmBundle\QueryBuilder\ConditionException;
 class Condition
 {
     const TYPE_VALUE    = "value";
+    const TYPE_RAW      = "raw";
     const TYPE_FIELD    = "field";
     const TYPE_SUBQUERY = "subquery";
     const TYPE_ARRAY    = "array";
@@ -29,10 +30,10 @@ class Condition
     protected $type2;
     protected $operator;
 
-    public function __construct($var1, $operator, $var2 = null)
+    public function __construct($var1, $operator, $var2 = null, $isRaw = false)
     {
-        $this->type1    = $this->getVarType($var1);
-        $this->type2    = $this->getVarType($var2);
+        $this->type1 = !$isRaw ? $this->getVarType($var1) : self::TYPE_RAW;
+        $this->type2 = $this->getVarType($var2);
         $this->checkOperator($operator);
         $this->operator = $operator;
         $this->var1     = $var1;
@@ -100,17 +101,21 @@ class Condition
             case "regexp":
                 if (!in_array($this->type1,
                         array(
-                        static::TYPE_FIELD,
-                        static::TYPE_VALUE,
-                        static::TYPE_SUBQUERY,
-                        static::TYPE_CONSTANT,
+                            static::TYPE_FIELD,
+                            static::TYPE_VALUE,
+                            static::TYPE_SUBQUERY,
+                            static::TYPE_CONSTANT,
+                            static::TYPE_RAW,
                         )
                     )) {
                     throw new ConditionException("Variable of type '".$this->type1."' is not possible with operator '$operator'");
                 }
                 if (!in_array($this->type2,
-                        array(static::TYPE_FIELD, static::TYPE_VALUE, static::TYPE_SUBQUERY,
-                        static::TYPE_CONSTANT))) {
+                        array(
+                            static::TYPE_FIELD,
+                            static::TYPE_VALUE,
+                            static::TYPE_SUBQUERY,
+                            static::TYPE_CONSTANT))) {
                     throw new ConditionException("Variable of type '".$this->type2."' is not possible with operator '$operator'");
                 }
                 break;
@@ -163,6 +168,10 @@ class Condition
                 break;
 
             case static::TYPE_VALUE:
+                $sql .= $var;
+                break;
+
+            case static::TYPE_RAW:
                 $sql .= $var;
                 break;
 

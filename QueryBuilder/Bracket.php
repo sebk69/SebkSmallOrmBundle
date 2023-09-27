@@ -100,6 +100,45 @@ class Bracket
     }
 
     /**
+     * And operator for raw condition
+     * @param \Sebk\SmallOrmBundle\QueryBuilder\Condition $condition
+     * @return \Sebk\SmallOrmBundle\QueryBuilder\Bracket
+     */
+    public function andRawCondition($var1, $operator, $var2 = null)
+    {
+        $this->operators[]  = "AND";
+        $this->conditions[] = new Condition($var1, $operator, $var2, true);
+
+        return $this;
+    }
+
+    /**
+     * And operator for raw condition
+     * @param \Sebk\SmallOrmBundle\QueryBuilder\Condition $condition
+     * @return \Sebk\SmallOrmBundle\QueryBuilder\Bracket
+     */
+    public function orRawCondition($var1, $operator, $var2 = null)
+    {
+        $this->operators[]  = "OR";
+        $this->conditions[] = new Condition($var1, $operator, $var2, true);
+
+        return $this;
+    }
+
+    /**
+     * Xor operator for raw condition
+     * @param \Sebk\SmallOrmBundle\QueryBuilder\Condition $condition
+     * @return \Sebk\SmallOrmBundle\QueryBuilder\Bracket
+     */
+    public function xorRawCondition($var1, $operator, $var2 = null)
+    {
+        $this->operators[]  = "XOR";
+        $this->conditions[] = new Condition($var1, $operator, $var2, true);
+
+        return $this;
+    }
+
+    /**
      * Add first condition as bracket
      * @param \Sebk\SmallOrmBundle\QueryBuilder\Bracket $condition
      * @return \Sebk\SmallOrmBundle\QueryBuilder\bracket
