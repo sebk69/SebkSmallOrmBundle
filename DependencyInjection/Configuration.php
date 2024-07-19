@@ -20,7 +20,7 @@ class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder("sebk_small_orm");
 
-        $treeBuilder->root()
+        $treeBuilder->root("sebk_small_orm")
             ->children()
                 ->scalarNode('default_connection')
                     ->defaultValue('default')
