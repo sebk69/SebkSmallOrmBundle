@@ -58,13 +58,19 @@ class Connection
             case "mysql":
                 // Connect to database
                 $connectionString = "mysql:dbname=$this->database;host=$this->host;charset=$this->encoding";
+                $pdoOptions = array(
+                    // ERRMODE_EXCEPTION : remonte les erreurs comme PDOException
+                    // au lieu de fail silencieusement (cas "Packets out of order",
+                    // "MySQL server has gone away" perdus en warnings sinon).
+                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                );
                 try {
-                    $this->pdo = new \PDO($connectionString, $this->user, $this->password);
+                    $this->pdo = new \PDO($connectionString, $this->user, $this->password, $pdoOptions);
                 } catch (\PDOException $e) {
                     // Create database if not exists
                     $connectionString = "mysql:host=$this->host;charset=$this->encoding";
                     try {
-                        $this->pdo = new \PDO($connectionString, $this->user, $this->password);
+                        $this->pdo = new \PDO($connectionString, $this->user, $this->password, $pdoOptions);
                     } catch (\PDOException $e) {
                         throw new ConnectionException($e->getMessage());
                     }
@@ -105,26 +111,64 @@ class Connection
      */
     public function execute($sql, $params = array(), $retry = false)
     {
-        if ($this->dbType == "mysql" && $this->pdo->getAttribute(\PDO::ATTR_SERVER_INFO)=='MySQL server has gone away') {
-            $this->connect();
-        }
+        try {
+            $statement = $this->pdo->prepare($sql);
 
-        $statement = $this->pdo->prepare($sql);
+            foreach ($params as $param => $value) {
+                $statement->bindValue(":".$param, $value);
+            }
+            if ($statement->execute()) {
+                return $statement->fetchAll(\PDO::FETCH_ASSOC);
+            }
 
-        foreach ($params as $param => $value) {
-            $statement->bindValue(":".$param, $value);
-        }
-        if ($statement->execute()) {
-            return $statement->fetchAll(\PDO::FETCH_ASSOC);
-        } else {
+            // ERRMODE_EXCEPTION devrait throw avant d'arriver ici, mais on garde
+            // ce chemin pour les anciens drivers / mocks qui retournent false.
             $errInfo = $statement->errorInfo();
-            if($errInfo[0] == "HY000" && $errInfo[1] == "2006" && !$retry) {
+            if (!$retry && $this->dbType == "mysql" && $errInfo[0] == "HY000" && $errInfo[1] == "2006") {
                 $this->connect();
                 return $this->execute($sql, $params, true);
-            } else {
-                throw new ConnectionException("Fail to execute request : SQLSTATE[" . $errInfo[0] . "][" . $errInfo[1] . "] " . $errInfo[2]);
+            }
+            throw new ConnectionException("Fail to execute request : SQLSTATE[".$errInfo[0]."][".$errInfo[1]."] ".$errInfo[2]);
+        } catch (ConnectionException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            if (!$retry && $this->dbType == "mysql" && $this->isConnectionLost($e)) {
+                $this->connect();
+                return $this->execute($sql, $params, true);
+            }
+            throw new ConnectionException("Fail to execute request : ".$e->getMessage());
+        }
+    }
+
+    /**
+     * Detect if a throwable indicates that the MySQL connection has been
+     * closed server-side (idle timeout, network reset, proxy disconnect).
+     *
+     * Covers PDOException AND PHP Warning -> ContextErrorException converted
+     * by Symfony Debug handler ("Packets out of order").
+     *
+     * @param \Throwable $e
+     * @return bool
+     */
+    private function isConnectionLost(\Throwable $e)
+    {
+        $msg = strtolower($e->getMessage());
+        $needles = array(
+            'gone away',                    // 2006 MySQL server has gone away
+            'packets out of order',         // protocol desync after server-side close
+            'lost connection',              // 2013 Lost connection during query
+            'broken pipe',                  // EPIPE
+            'no connection',                // generic disconnect
+            'error while sending',          // mid-write disconnect
+            'error reading result set',     // mid-read disconnect
+            'connection refused',           // server unreachable on retry
+        );
+        foreach ($needles as $needle) {
+            if (strpos($msg, $needle) !== false) {
+                return true;
             }
         }
+        return false;
     }
 
     /**
